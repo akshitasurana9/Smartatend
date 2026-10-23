@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartAttend | Home</title>
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box
+}
+html{
+    scroll-behavior:smooth;
+    scroll-padding-top:85px
+}
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    color:#102653;background:#fff
+}
+a{
+    text-decoration:none;
+}
+.navbar{
+    min-height:78px;
+    padding:12px 8%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+    background:#fff;box-shadow:0 2px 12px rgba(20,50,100,.06);position:sticky;
+    top:0;
+    z-index:10
+}
+.brand{
+    color:#102653;
+    flex-shrink:0
+}
+.brand h2{
+    font-size:23px;
+    letter-spacing:-.6px
+}
+.brand h2 span{
+    color:#0866f5
+}
+.brand small{
+    display:block;
+    margin-top:3px;
+    font-size:9px;
+    color:#687a9b
+}
+.nav-links{
+    display:flex;
+    align-items:center;
+    gap:29px
+}
+.nav-links a{
+    color:#172a50;
+    font-size:13px;
+    font-weight:700;
+    padding:12px 0;
+    transition:.2s
+}
+.nav-links a:hover,.nav-links a.active{
+    color:#0866f5
+}
+.nav-links a.active{
+    border-bottom:2px solid #0866f5
+}
+.nav-actions{
+    display:flex;
+    gap:10px;
+    align-items:center
+8}
+.login-btn,.signup-btn{display:inline-flex;justify-content:center;align-items:center;gap:7px;padding:12px 20px;border-radius:9px;background:#0866f5;color:white;font-size:12px;white-space:nowrap;transition:.2s}
+.signup-btn{min-width:103px}
+.login-btn:hover,.signup-btn:hover,.primary-btn:hover{background:#004dcc;transform:translateY(-2px)}
+.menu-toggle{display:none;background:none;border:0;font-size:25px;color:#102653}
+.hero{min-height:484px;display:grid;grid-template-columns:50% 50%;align-items:center;padding-left:8%;background:linear-gradient(115deg,#eff7ff 0%,#e4f1ff 55%,#d4e9ff 100%);overflow:hidden}
+.hero-content{padding:50px 22px 50px 0;position:relative;z-index:2}
+.tagline{display:inline-block;padding:8px 15px;background:#d8eaff;color:#0866f5;border-radius:30px;font-size:10px;font-weight:bold;letter-spacing:.4px;margin-bottom:23px}
+.hero h1{font-size:clamp(35px,3.5vw,54px);line-height:1.16;letter-spacing:-1.4px;color:#102653;margin-bottom:20px}
+.hero h1 span{color:#0866f5}
+.hero-content p{max-width:475px;font-size:14px;line-height:1.9;color:#60769d;margin-bottom:27px}
+.hero-buttons{display:flex;flex-wrap:wrap;gap:15px}
+.primary-btn,.secondary-btn{min-width:145px;min-height:47px;display:inline-flex;justify-content:center;align-items:center;gap:9px;padding:12px 20px;border-radius:30px;font-size:12px;transition:.25s}
+.primary-btn{background:#0866f5;color:#fff}
+.secondary-btn{background:#fff;color:#0866f5;border:1px solid #0866f5}
+.secondary-btn:hover{background:#0866f5;color:#fff}
+.hero-image{height:484px;position:relative;overflow:hidden;border-radius:48% 0 0 48% / 60% 0 0 60%;background:#a6b6ef}
+.hero-image>img{height:100%;width:100%;object-fit:cover;object-position:center 35%;display:block}
+.hero-image:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(226,241,255,.12),transparent 35%);pointer-events:none}
+.face-frame{position:absolute;z-index:2;top:18%;left:25%;width:125px;height:155px;border:2px solid #16c5ff;border-radius:3px;box-shadow:0 0 18px rgba(0,180,255,.35)}
+.corner{position:absolute;width:16px;height:16px;border-color:#fff;border-style:solid}
+.top-left{top:-3px;left:-3px;border-width:3px 0 0 3px}
+.top-right{top:-3px;right:-3px;border-width:3px 3px 0 0}
+.bottom-left{bottom:-3px;left:-3px;border-width:0 0 3px 3px}
+.bottom-right{bottom:-3px;right:-3px;border-width:0 3px 3px 0}
+.scan-line{height:2px;width:100%;position:absolute;top:55%;background:#23d6ff;box-shadow:0 0 10px #23d6ff;opacity:.8}
+.recognition-card{position:absolute;z-index:3;top:22%;right:20%;display:flex;align-items:center;gap:11px;padding:14px 17px;border:1px solid #8ce9ff;border-radius:13px;color:#fff;background:rgba(0,135,230,.96);box-shadow:0 8px 25px rgba(0,72,160,.2)}
+.check-icon{width:32px;height:32px;display:grid;place-items:center;border:2px solid #fff;border-radius:50%;font-size:19px}
+.recognition-card strong,.recognition-card small{display:block}
+.recognition-card strong{font-size:12px}
+.recognition-card small{margin-top:5px;font-size:10px}
+.fingerprint-card{position:absolute;z-index:2;right:8%;bottom:8%;width:110px;padding:10px;border:3px solid #b9c8d9;border-radius:16px;background:linear-gradient(145deg,#27364a,#050b16);box-shadow:0 10px 25px rgba(0,0,0,.3);display:flex;flex-direction:column;align-items:center;gap:10px}
+.device-screen{width:100%;height:80px;background:#071729;border-radius:7px;border:1px solid #304e70;color:#19caff;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px}
+.face-symbol{font-size:32px}
+.device-screen small{font-size:6px}
+.fingerprint{font-size:27px;color:#19caff}
+.features{padding:78px 8%;text-align:center}
+.features h2,.info-section h2{font-size:32px;line-height:1.25;margin-bottom:14px}
+.features h2 span,.info-section h2 span{color:#0866f5}
+.section-intro{color:#687a9b;font-size:15px;line-height:1.8}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:39px;text-align:center}
+.feature-card{padding:31px 23px;border:1px solid #e0eaf8;border-radius:16px;background:#fff;box-shadow:0 8px 25px rgba(20,60,120,.06);transition:.25s}
+.feature-card:hover{transform:translateY(-5px);box-shadow:0 12px 30px rgba(20,60,120,.12)}
+.feature-icon{width:56px;height:56px;margin:0 auto 18px;border-radius:15px;display:grid;place-items:center;background:#eaf3ff;color:#0866f5;font-size:28px}
+.feature-card h3{font-size:18px;margin-bottom:11px}
+.feature-card p{font-size:13px;color:#687a9b;line-height:1.8}
+.info-section{padding:68px 10%;text-align:center;background:#f7faff}
+.info-section p{max-width:740px;margin:0 auto;color:#687a9b;font-size:15px;line-height:1.9}
+.how-section{padding:72px 8%;text-align:center}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:35px;text-align:left}
+.step{padding:24px;border:1px solid #e0eaf8;border-radius:15px;background:#fff}
+.step-number{width:37px;height:37px;display:grid;place-items:center;border-radius:11px;background:#eaf3ff;color:#0866f5;font-weight:bold;margin-bottom:14px}
+.step h3{font-size:15px;margin-bottom:8px}
+.step p{font-size:12px;line-height:1.8;color:#687a9b}
+.contact{padding:58px 8%;text-align:center;background:#f7faff}
+.contact p{margin:10px auto 22px;color:#687a9b;font-size:14px}
+.contact a{color:#0866f5;font-weight:bold}
+footer{padding:23px 8%;background:#102653;color:#dce8fb;display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;font-size:11px}
+footer a{color:#dce8fb;margin-left:15px}
+@media(max-width:1050px){.navbar{padding-inline:4%;gap:16px}.nav-links{gap:15px}.hero{padding-left:5%;grid-template-columns:48% 52%}.recognition-card{right:5%}.fingerprint-card{transform:scale(.85);transform-origin:bottom right}}
+@media(max-width:780px){.navbar{flex-wrap:wrap}.menu-toggle{display:block;margin-left:auto}.nav-links{display:none;order:4;width:100%;flex-direction:column;align-items:stretch;gap:0}.nav-links.open{display:flex}.nav-links a{padding:12px 0;border-bottom:1px solid #edf2f9}.nav-actions{order:5;width:100%}.nav-actions a{flex:1}.hero{grid-template-columns:1fr;padding:0 6%}.hero-content{padding:45px 0 25px}.hero-image{height:360px;margin:0 -6%;border-radius:40% 0 0 0 / 22% 0 0 0}.feature-grid{grid-template-columns:repeat(2,1fr)}.steps{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.brand h2{font-size:21px}.hero h1{font-size:38px}.hero-image{height:300px}.face-frame{width:90px;height:120px;left:22%}.recognition-card{right:3%;padding:10px;gap:7px}.recognition-card strong{font-size:10px}.recognition-card small{font-size:9px}.fingerprint-card{right:4%;transform:scale(.78);transform-origin:bottom right}.features{padding:60px 6%}.features h2,.info-section h2{font-size:27px}.feature-grid,.steps{grid-template-columns:1fr}.info-section,.how-section{padding:58px 6%}footer{justify-content:center;text-align:center}}
+
+/* Dashboard-matched dark navy theme */
+body{background:#080f1e;color:#eef4ff}
+.navbar{background:#0b1425;box-shadow:0 2px 18px rgba(0,0,0,.3);border-bottom:1px solid #1d2c46}
+.brand{color:#f2f6ff}
+.brand small{color:#8196ba}
+.brand h2 span{color:#6692ff}
+.nav-links a{color:#9eb6dc}
+.nav-links a:hover,.nav-links a.active{color:#77a4ff}
+.nav-links a.active{border-bottom-color:#5b8cff}
+.login-btn,.signup-btn,.primary-btn{background:linear-gradient(135deg,#5d91ff,#456df0);color:#fff;box-shadow:0 5px 14px rgba(58,105,230,.16)}
+.login-btn:hover,.signup-btn:hover,.primary-btn:hover{background:#3d69e5}
+.hero{background:linear-gradient(115deg,#0b1425 0%,#12213a 58%,#172b4c 100%)}
+.hero h1{color:#f2f6ff}
+.hero h1 span{color:#75a3ff}
+.hero-content p{color:#a7bbdc}
+.tagline{background:#172b49;color:#8eb5ff;border:1px solid #28466f}
+.secondary-btn{background:#0d192c;color:#8bb3ff;border-color:#426fc3}
+.secondary-btn:hover{background:#426fe8;color:#fff}
+.hero-image{background:#1b2e51}
+.hero-image:after{background:linear-gradient(90deg,rgba(11,20,37,.12),transparent 35%)}
+.recognition-card{background:rgba(25,104,191,.96);border-color:#3986d8}
+.features,.how-section{background:#080f1e}
+.features h2,.info-section h2,.how-section h2,.contact h2{color:#f0f5ff}
+.features h2 span,.info-section h2 span{color:#6e9bff}
+.section-intro{color:#93a9cb}
+.feature-card,.step{background:linear-gradient(145deg,#111d31,#0e182a);border-color:#22324d;box-shadow:0 10px 28px rgba(0,0,0,.18)}
+.feature-card:hover{border-color:#3d5e96;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+.feature-icon,.step-number{background:#202b4d;color:#8c8aff}
+.feature-card h3,.step h3{color:#edf4ff}
+.feature-card p,.step p{color:#92a9cc}
+.info-section,.contact{background:#0e192b}
+.info-section p,.contact p{color:#9bb0d0}
+.contact a{color:#8bb0ff}
+footer{background:#060b15;color:#bdcce5;border-top:1px solid #1d2b43}
+footer a{color:#b6c9eb}
+.menu-toggle{color:#eef4ff}
+@media(max-width:780px){.nav-links a{border-color:#22324d}}
+
+</style>
+</head>
+<body>
+<header class="navbar">
+  <a class="brand" href="#home">
+    <h2>Smart<span>Attend</span></h2>
+    <small>Biometric Attendance Management System</small>
+  </a>
+  <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+  <nav class="nav-links" id="navLinks">
+    <a class="active" href="#home">Home</a>
+    <a href="#features">Features</a>
+    <a href="#about">About</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  <div class="nav-actions">
+    <a class="login-btn" href="teacher_login.html">↪ &nbsp; Login</a>
+    <a class="signup-btn" href="teacher_signup.html">Sign Up ↗</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="home">
+    <div class="hero-content">
+      <div class="tagline">SMART &nbsp; • &nbsp; SECURE &nbsp; • &nbsp; EFFICIENT</div>
+      <h1>Smarter Attendance<br>for a <span>Better Tomorrow</span></h1>
+      <p>SmartAttend is a modern biometric attendance management system that uses face recognition and fingerprint technology to make attendance simple, secure and hassle-free.</p>
+      <div class="hero-buttons">
+        <a href="teacher_login.html" class="primary-btn">➜ &nbsp; Get Started</a>
+        <a href="#how-it-works" class="secondary-btn"><span>▶</span> &nbsp; Watch Demo</a>
+      </div>
+    </div>
+    <div class="hero-image">
+      <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1100&q=85" alt="Face recognition visual for SmartAttend">
+      <div class="face-frame" aria-hidden="true">
+        <span class="corner top-left"></span><span class="corner top-right"></span>
+        <span class="corner bottom-left"></span><span class="corner bottom-right"></span>
+        <div class="scan-line"></div>
+      </div>
+      <div class="recognition-card">
+        <div class="check-icon">✓</div>
+        <div><strong>Face Recognized</strong><small>Illustrative preview</small></div>
+      </div>
+      <div class="fingerprint-card" aria-hidden="true">
+        <div class="device-screen"><span class="face-symbol">◎</span><small>IDENTITY SCAN</small></div>
+        <div class="fingerprint">♧</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <h2>Why Choose <span>SmartAttend?</span></h2>
+    <p class="section-intro">Smart, secure and reliable attendance management.</p>
+    <div class="feature-grid">
+      <article class="feature-card"><div class="feature-icon">◉</div><h3>Face Recognition</h3><p>Verify student identity using face recognition as part of the attendance process.</p></article>
+      <article class="feature-card"><div class="feature-icon">♧</div><h3>Fingerprint Verification</h3><p>Support fingerprint verification through compatible biometric hardware.</p></article>
+      <article class="feature-card"><div class="feature-icon">▤</div><h3>Attendance Records</h3><p>Keep attendance information organized for convenient review and management.</p></article>
+      <article class="feature-card"><div class="feature-icon">♙</div><h3>Student Management</h3><p>Maintain student details and associate attendance with the correct student identity.</p></article>
+      <article class="feature-card"><div class="feature-icon">▥</div><h3>Reports & History</h3><p>Review saved attendance records and summarize attendance information.</p></article>
+      <article class="feature-card"><div class="feature-icon">✓</div><h3>Duplicate Prevention</h3><p>Use validation rules to help prevent duplicate entries and incorrect identity matching.</p></article>
+    </div>
+  </section>
+
+  <section class="info-section" id="about">
+    <h2>About <span>SmartAttend</span></h2>
+    <p>SmartAttend is designed to simplify attendance management for educational institutions using biometric verification and digital records. Its goal is to make attendance workflows more organized, consistent and easier for authorized staff to review.</p>
+  </section>
+
+  <section class="how-section" id="how-it-works">
+    <h2>How It <span style="color:#0866f5">Works</span></h2>
+    <p class="section-intro">A simple overview of the attendance workflow.</p>
+    <div class="steps">
+      <article class="step"><div class="step-number">01</div><h3>Select Class</h3><p>The teacher selects the class and starts an attendance session.</p></article>
+      <article class="step"><div class="step-number">02</div><h3>Verify Identity</h3><p>The system checks the student's identity through the configured verification method.</p></article>
+      <article class="step"><div class="step-number">03</div><h3>Validate Record</h3><p>Identity and duplicate-entry checks are applied before saving attendance.</p></article>
+      <article class="step"><div class="step-number">04</div><h3>Save Attendance</h3><p>Valid records can then be reviewed in attendance history and reports.</p></article>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <h2>Smart Attendance Starts Here</h2>
+    <p>Explore SmartAttend and its attendance management workflow.</p>
+    <a href="teacher_login.html">Get Started →</a>
+  </section>
+</main>
+
+<footer>
+  <span>© <span id="year"></span> SmartAttend. All rights reserved.</span>
+  <span><a href="#home">Home</a><a href="#features">Features</a><a href="#about">About</a><a href="#contact">Contact</a></span>
+</footer>
+<script>
+const menuToggle = document.getElementById("menuToggle");
+const navLinks = document.getElementById("navLinks");
+menuToggle.addEventListener("click", () => {
+  const open = navLinks.classList.toggle("open");
+  menuToggle.setAttribute("aria-expanded", String(open));
+  menuToggle.textContent = open ? "×" : "☰";
+});
+navLinks.querySelectorAll("a").forEach(link => link.addEventListener("click", () => {
+  navLinks.classList.remove("open");
+  menuToggle.setAttribute("aria-expanded", "false");
+  menuToggle.textContent = "☰";
+  navLinks.querySelectorAll("a").forEach(item => item.classList.remove("active"));
+  link.classList.add("active");
+}));
+document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+</body>
+</html>

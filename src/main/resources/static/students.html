@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SmartAttend | Student Records</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+.records-page{max-width:1120px;margin:40px auto;padding:24px;font-family:Arial,sans-serif;color:#102653}
+.records-header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.records-header h1{margin:0 0 8px}.records-header p{color:#60769d}
+.records-card{background:#fff;border:1px solid #e0eaf8;border-radius:16px;padding:22px;margin-top:24px;box-shadow:0 8px 25px #143c780d}
+.record-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.record-form label{font-size:13px;font-weight:600;display:grid;gap:7px}
+.record-form input{width:100%;padding:12px;border:1px solid #ccd8e8;border-radius:8px;font:inherit}
+.action{border:0;border-radius:8px;padding:11px 16px;background:#0866f5;color:#fff;cursor:pointer;font-weight:600}
+.action.secondary{background:#eaf3ff;color:#0866f5}.action.danger{background:#c62828}.form-actions{display:flex;gap:10px;grid-column:1/-1;flex-wrap:wrap}
+.status{min-height:22px;margin:12px 0;color:#126a35}.status.error{color:#b42318}
+.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:650px}th,td{text-align:left;padding:12px;border-bottom:1px solid #e5edf7;font-size:14px}th{background:#f1f6ff}
+.row-actions{display:flex;gap:7px}.row-actions button{padding:7px 10px}
+@media(max-width:650px){.record-form{grid-template-columns:1fr}.records-page{padding:14px}.records-card{padding:15px}}
+</style>
+</head>
+<body style="background:#f6f9ff">
+<main class="records-page">
+  <header class="records-header"><div><h1>Smart<span style="color:#0866f5">Attend</span> Student Records</h1><p>Create, view, update and delete student records connected to MySQL.</p></div><div><a class="action secondary" href="index.html" style="text-decoration:none">Home</a> <a class="action secondary" href="login.html" style="text-decoration:none">Logout</a></div></header>
+  <section class="records-card">
+    <h2 id="formTitle">Add Student</h2>
+    <form id="studentForm" class="record-form">
+      <input type="hidden" id="studentId">
+      <label>Full name<input id="name" maxlength="100" required></label>
+      <label>Roll number<input id="rollNumber" maxlength="40" required></label>
+      <label>Email address<input id="email" type="email" maxlength="160" required></label>
+      <label>Mobile number<input id="mobile" type="tel" maxlength="20"></label>
+      <label id="passwordLabel">Password (minimum 8 characters)<input id="password" type="password" minlength="8" autocomplete="new-password" required></label>
+      <div class="form-actions"><button class="action" type="submit" id="saveButton">Save Student</button><button class="action secondary" type="button" id="cancelButton" hidden>Cancel edit</button><button class="action secondary" type="button" id="refreshButton">Refresh records</button></div>
+    </form>
+    <p id="status" class="status" role="status"></p>
+  </section>
+  <section class="records-card"><h2>Student List</h2><div class="table-wrap"><table><thead><tr><th>ID</th><th>Name</th><th>Roll Number</th><th>Email</th><th>Mobile</th><th>Actions</th></tr></thead><tbody id="studentRows"><tr><td colspan="6">Loading records...</td></tr></tbody></table></div></section>
+</main>
+<script>
+"use strict";
+const API="/api/students";
+const form=document.getElementById("studentForm"), rows=document.getElementById("studentRows");
+const statusBox=document.getElementById("status"), idInput=document.getElementById("studentId"), passwordInput=document.getElementById("password");
+function message(text,error=false){statusBox.textContent=text;statusBox.className="status"+(error?" error":"");}
+async function api(url,options={}) {
+  const response=await fetch(url,{...options,headers:{"Content-Type":"application/json",...(options.headers||{})}});
+  const data=response.status===204?{}:await response.json().catch(()=>({message:"Unexpected server response."}));
+  if(!response.ok) throw new Error(data.message||`Request failed (${response.status})`);
+  return data;
+}
+async function loadStudents(){
+  rows.innerHTML="<tr><td colspan='6'>Loading records...</td></tr>";
+  try {
+    const students=await api(API);
+    if(!students.length){rows.innerHTML="<tr><td colspan='6'>No student records yet.</td></tr>";return;}
+    rows.replaceChildren();
+    students.forEach(s=>{
+      const tr=document.createElement("tr");
+      [s.studentId,s.name,s.rollNumber,s.email,s.mobile||"—"].forEach(value=>{const td=document.createElement("td");td.textContent=value;tr.appendChild(td);});
+      const actions=document.createElement("td"), wrap=document.createElement("div");wrap.className="row-actions";
+      const edit=document.createElement("button");edit.className="action secondary";edit.textContent="Edit";edit.type="button";edit.addEventListener("click",()=>editStudent(s));
+      const del=document.createElement("button");del.className="action danger";del.textContent="Delete";del.type="button";del.addEventListener("click",()=>deleteStudent(s));
+      wrap.append(edit,del);actions.append(wrap);tr.append(actions);rows.append(tr);
+    });
+  } catch(e){rows.innerHTML="<tr><td colspan='6'>Could not load records.</td></tr>";message(e.message,true);}
+}
+function editStudent(s){
+  idInput.value=s.studentId;document.getElementById("name").value=s.name;document.getElementById("rollNumber").value=s.rollNumber;
+  document.getElementById("email").value=s.email;document.getElementById("mobile").value=s.mobile||"";
+  passwordInput.value="";passwordInput.required=false;document.getElementById("passwordLabel").textContent="New password (leave blank to keep current)";
+  document.getElementById("formTitle").textContent="Edit Student";document.getElementById("saveButton").textContent="Update Student";
+  document.getElementById("cancelButton").hidden=false;message("Editing student #"+s.studentId);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function resetForm(){form.reset();idInput.value="";passwordInput.required=true;document.getElementById("passwordLabel").textContent="Password (minimum 8 characters)";document.getElementById("formTitle").textContent="Add Student";document.getElementById("saveButton").textContent="Save Student";document.getElementById("cancelButton").hidden=true;}
+form.addEventListener("submit",async e=>{
+  e.preventDefault();
+  const payload={name:document.getElementById("name").value.trim(),rollNumber:document.getElementById("rollNumber").value.trim(),email:document.getElementById("email").value.trim(),mobile:document.getElementById("mobile").value.trim(),password:passwordInput.value};
+  const id=idInput.value;if(id&&!payload.password)delete payload.password;
+  try{const result=await api(id?`${API}/${id}`:`${API}/register`,{method:id?"PUT":"POST",body:JSON.stringify(payload)});message(result.message||"Saved successfully.");resetForm();await loadStudents();}
+  catch(err){message(err.message,true);}
+});
+async function deleteStudent(s){if(!confirm(`Delete ${s.name} (${s.rollNumber})? This cannot be undone.`))return;try{const result=await api(`${API}/${s.studentId}`,{method:"DELETE"});message(result.message);if(idInput.value==s.studentId)resetForm();await loadStudents();}catch(e){message(e.message,true);}}
+document.getElementById("cancelButton").addEventListener("click",resetForm);
+document.getElementById("refreshButton").addEventListener("click",loadStudents);
+loadStudents();
+</script>
+</body></html>

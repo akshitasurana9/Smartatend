@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#102a56">
+  <title>SmartAttend | Teacher Login</title>
+  <style>
+    :root {
+      --primary: #1769ff;
+      --primary-dark: #1051cf;
+      --navy: #102a56;
+      --text: #17243b;
+      --muted: #6b7890;
+      --border: #dce5f1;
+      --danger: #c62828;
+      --success: #16804a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background: linear-gradient(135deg, #eaf2ff 0%, #f7faff 48%, #e6f8ff 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 16px;
+    }
+    .page { width: 100%; max-width: 1020px; }
+    .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .brand-mark {
+      width: 46px; height: 46px; border-radius: 14px;
+      display: grid; place-items: center; color: #fff;
+      background: linear-gradient(135deg, var(--primary), #35b8ed);
+      font-size: 23px; font-weight: 800; box-shadow: 0 8px 20px #1769ff35;
+    }
+    .brand h1 { color: var(--navy); font-size: 22px; letter-spacing: -.5px; }
+    .brand p { color: var(--muted); font-size: 12px; margin-top: 3px; }
+    .card {
+      display: grid; grid-template-columns: 0.95fr 1.05fr;
+      overflow: hidden; background: #fff; border: 1px solid #e5ebf4;
+      border-radius: 24px; box-shadow: 0 24px 70px #173d7018;
+    }
+    .welcome-panel {
+      position: relative; overflow: hidden; padding: 52px 38px; color: #fff;
+      background: linear-gradient(145deg, #102a56 0%, #174b91 62%, #147bb6 100%);
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .welcome-panel::before, .welcome-panel::after {
+      content: ""; position: absolute; border: 1px solid #ffffff24; border-radius: 50%;
+      width: 300px; height: 300px; right: -130px; top: -110px;
+    }
+    .welcome-panel::after { width: 220px; height: 220px; right: -70px; top: -70px; }
+    .eyebrow { position: relative; z-index: 1; color: #a9ddff; text-transform: uppercase; font-size: 11px; font-weight: 800; letter-spacing: 2px; margin-bottom: 17px; }
+    .welcome-panel h2 { position: relative; z-index: 1; font-size: clamp(29px, 4vw, 39px); line-height: 1.15; letter-spacing: -1px; margin-bottom: 17px; }
+    .welcome-panel > p { position: relative; z-index: 1; color: #d6e7ff; line-height: 1.75; font-size: 14px; max-width: 330px; }
+    .feature-list { position: relative; z-index: 1; display: grid; gap: 17px; margin-top: 34px; }
+    .feature { display: flex; gap: 12px; align-items: center; color: #f3f8ff; font-size: 13px; }
+    .feature-icon { flex: 0 0 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; background: #ffffff18; border: 1px solid #ffffff20; }
+    .form-panel { padding: 48px 44px 40px; }
+    .form-panel h2 { color: var(--navy); font-size: 27px; letter-spacing: -.7px; }
+    .subtitle { color: var(--muted); font-size: 13px; margin-top: 9px; margin-bottom: 30px; line-height: 1.6; }
+    .form-group { margin-bottom: 19px; }
+    .form-group label { display: block; color: #273a57; font-size: 12px; font-weight: 750; margin-bottom: 8px; }
+    .input-wrap { position: relative; }
+    .input-wrap input {
+      display: block; width: 100%; height: 48px; border: 1px solid var(--border);
+      border-radius: 10px; padding: 0 14px; outline: none; color: var(--text);
+      background: #fbfdff; font: inherit; font-size: 13px; transition: .2s;
+    }
+    .input-wrap input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px #1769ff16; }
+    .input-wrap input::placeholder { color: #9aa7ba; }
+    .password-wrap input { padding-right: 50px; }
+    .eye-button { position: absolute; right: 7px; top: 6px; height: 36px; width: 36px; border: 0; border-radius: 8px; background: transparent; cursor: pointer; color: #62728c; font-size: 17px; }
+    .eye-button:hover { background: #edf4ff; color: var(--primary); }
+    .form-options { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 3px 0 20px; font-size: 12px; }
+    .remember { display: flex; align-items: center; gap: 7px; color: #586780; cursor: pointer; }
+    .remember input { accent-color: var(--primary); }
+    a { color: var(--primary); text-decoration: none; font-weight: 700; }
+    a:hover { text-decoration: underline; }
+    .login-button {
+      width: 100%; height: 49px; display: flex; align-items: center; justify-content: center; gap: 10px;
+      border: 0; border-radius: 10px; color: #fff; cursor: pointer;
+      background: linear-gradient(100deg, var(--primary), #258be8);
+      font-size: 12px; font-weight: 800; letter-spacing: .7px;
+      box-shadow: 0 9px 20px #1769ff2b; transition: transform .2s, box-shadow .2s;
+    }
+    .login-button:hover { transform: translateY(-1px); box-shadow: 0 12px 25px #1769ff40; }
+    .login-button:disabled { opacity: .7; cursor: wait; transform: none; }
+    .message { min-height: 18px; margin: 0 0 12px; font-size: 12px; line-height: 1.5; }
+    .message.error { color: var(--danger); }
+    .message.success { color: var(--success); }
+    .message.info { color: #245da8; }
+    .bottom-links { text-align: center; margin-top: 23px; color: var(--muted); font-size: 12px; line-height: 1.9; }
+    .divider { height: 1px; background: #edf1f7; margin: 23px 0 17px; }
+    .copyright { text-align: center; color: #8995a8; font-size: 11px; margin-top: 20px; }
+    @media (max-width: 760px) {
+      .card { grid-template-columns: 1fr; }
+      .welcome-panel { padding: 30px 27px; }
+      .welcome-panel h2 { font-size: 29px; }
+      .feature-list { grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 22px; }
+      .form-panel { padding: 32px 25px; }
+    }
+    @media (max-width: 420px) {
+      .feature-list { grid-template-columns: 1fr; }
+      .form-options { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="brand">
+      <div class="brand-mark" aria-hidden="true">S</div>
+      <div><h1>SmartAttend</h1><p>Smart Attendance Management System</p></div>
+    </header>
+
+    <section class="card" aria-label="Teacher login">
+      <aside class="welcome-panel">
+        <p class="eyebrow">Teacher Portal</p>
+        <h2>Welcome back,<br>Educator.</h2>
+        <p>Sign in to manage your classes, view attendance records, and keep your students' attendance organized in one place.</p>
+        <div class="feature-list">
+          <div class="feature"><span class="feature-icon">✓</span><span>Manage student attendance</span></div>
+          <div class="feature"><span class="feature-icon">▦</span><span>View class records</span></div>
+          <div class="feature"><span class="feature-icon">◷</span><span>Track attendance history</span></div>
+          <div class="feature"><span class="feature-icon">⌂</span><span>Secure teacher portal</span></div>
+        </div>
+      </aside>
+
+      <div class="form-panel">
+        <h2>Teacher Login</h2>
+        <p class="subtitle">Enter your registered email and password to continue.</p>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="email">Official Email Address</label>
+            <div class="input-wrap">
+              <input type="email" id="email" name="email" placeholder="teacher@college.edu" autocomplete="username" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-wrap password-wrap">
+              <input type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+              <button type="button" id="togglePassword" class="eye-button" aria-label="Show password" title="Show or hide password">◉</button>
+            </div>
+          </div>
+          <div class="form-options">
+            <label class="remember"><input type="checkbox" id="rememberMe" name="rememberMe"> Remember Me</label>
+            <a href="#" id="forgotPassword">Forgot Password?</a>
+          </div>
+          <p id="message" class="message" role="status" aria-live="polite"></p>
+          <button type="submit" class="login-button">LOGIN TO DASHBOARD <span aria-hidden="true">➜</span></button>
+        </form>
+
+        <div class="divider"></div>
+        <div class="bottom-links">
+          New teacher? <a href="teacher_signup.html">Create an account</a><br>
+          Are you a student? <a href="student_login.html">Student Login</a>
+        </div>
+      </div>
+    </section>
+    <p class="copyright">© 2026 SmartAttend. All rights reserved.</p>
+  </main>
+
+  <script>
+    "use strict";
+
+    const loginForm = document.getElementById("loginForm");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const togglePassword = document.getElementById("togglePassword");
+    const message = document.getElementById("message");
+    const loginButton = loginForm.querySelector('button[type="submit"]');
+
+    function showMessage(text, type) {
+      message.textContent = text;
+      message.className = "message " + type;
+    }
+
+    togglePassword.addEventListener("click", function () {
+      const showPassword = passwordInput.type === "password";
+      passwordInput.type = showPassword ? "text" : "password";
+      togglePassword.setAttribute("aria-label", showPassword ? "Hide password" : "Show password");
+    });
+
+    loginForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      alert(password);
+
+      if (!email || !password) {
+        showMessage("Please enter your email address and password.", "error");
+        return;
+      }
+
+      loginButton.disabled = true;
+      loginButton.textContent = "PLEASE WAIT...";
+      showMessage("Verifying your login details...", "info");
+
+      try {
+        // Send the plain password securely over HTTPS to the backend.
+        // The backend must compare it with the stored teachers.password_hash
+        // using PasswordEncoder.matches(rawPassword, teacher.getPasswordHash()).
+        // Do NOT send password_hash from this browser form.
+        const response = await fetch("/api/teachers/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email, password: password })
+        });
+
+        const responseText = await response.text();
+        let result = {};
+        try {
+          result = responseText ? JSON.parse(responseText) : {};
+        } catch (_) {
+          result = { message: responseText };
+        }
+
+        if (!response.ok) {
+          throw new Error(result.message || result.error ||
+            (response.status === 401 ? "Invalid email or password." :
+            "Login failed (HTTP " + response.status + "). Check your Spring Boot API."));
+        }
+
+        // Expected success response may be: { "message": "Login successful" }
+        showMessage(result.message || "Login successful! Opening dashboard...", "success");
+        window.setTimeout(function () {
+          window.location.href = "teacher_dashboard.html";
+        }, 900);
+      } catch (error) {
+        if (error instanceof TypeError) {
+          showMessage("Cannot connect to the server. Start Spring Boot and open this page from http://localhost:8080/teacher_login.html. Make sure POST /api/teachers/login exists.", "error");
+        } else {
+          showMessage(error.message || "An unexpected error occurred.", "error");
+        }
+      } finally {
+        loginButton.disabled = false;
+        loginButton.innerHTML = 'LOGIN TO DASHBOARD <span aria-hidden="true">➜</span>';
+      }
+    });
+
+    document.getElementById("forgotPassword").addEventListener("click", function (event) {
+      event.preventDefault();
+      showMessage("Please contact your institute administrator to reset your password.", "info");
+    });
+  </script>
+</body>
+</html>

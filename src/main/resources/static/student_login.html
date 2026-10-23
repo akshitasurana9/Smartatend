@@ -1,0 +1,889 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SmartAttend | Login</title>
+
+    <!-- <link rel="stylesheet" href="style.css"> -->
+
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+        <style>
+    /* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'); */
+
+:root {
+    --bg: #031329;
+    --panel: #061b38;
+    --blue: #009dff;
+    --cyan: #19d9ff;
+    --white: #f5f9ff;
+    --muted: #91b7e5;
+    --border: #0878c9;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    color: var(--white);
+    background: var(--bg);
+}
+
+.login-page {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 53% 47%;
+    background: #031329;
+}
+
+/* LEFT SIDE */
+
+.welcome-section {
+    position: relative;
+    overflow: hidden;
+    min-width: 0;
+    min-height: 100vh;
+    padding: 28px 6%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    background:
+        radial-gradient(circle at 80% 30%,
+            rgba(0, 157, 255, .18), transparent 35%),
+        linear-gradient(135deg, #061a37, #002450 75%, #031329);
+
+    border-right: 1px solid #0878c9;
+}
+
+.welcome-section::before {
+    content: "";
+    position: absolute;
+    width: 310px;
+    height: 310px;
+    top: 15%;
+    right: -170px;
+    border: 1px solid rgba(0, 190, 255, .30);
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 28px rgba(0, 190, 255, .035),
+        0 0 0 58px rgba(0, 190, 255, .025);
+    pointer-events: none;
+}
+
+.welcome-section > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* BRAND */
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--cyan);
+    font-size: 25px;
+    background: rgba(0, 190, 255, .09);
+    border: 1px solid #008dce;
+    border-radius: 13px;
+    box-shadow: 0 0 18px rgba(0, 190, 255, .12);
+}
+
+.brand h2,
+.form-heading h2 {
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--white) !important;
+}
+
+.brand h2 span,
+.form-heading h2 span {
+    color: var(--cyan) !important;
+}
+
+.brand p {
+    margin-top: 4px;
+    color: #a7c8ed !important;
+    font-size: 10px;
+    letter-spacing: .2px;
+}
+
+/* HERO TEXT */
+
+.welcome-content {
+    margin: 28px 0 22px;
+}
+
+.welcome-content h1 {
+    font-size: clamp(28px, 3.2vw, 45px);
+    line-height: 1.19;
+    font-weight: 800;
+    letter-spacing: -1.3px;
+    color: #ffffff !important;
+}
+
+.welcome-content h1 span {
+    color: var(--cyan) !important;
+}
+
+.description {
+    margin-top: 17px;
+    color: #b9d5f4 !important;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+/* FEATURE ICONS */
+
+.features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 25px;
+}
+
+.feature {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.feature-icon {
+    width: 43px;
+    height: 43px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--cyan) !important;
+    font-size: 18px;
+    background: rgba(0, 190, 255, .08);
+    border: 1px solid #008dd5;
+    border-radius: 12px;
+    transition: .25s ease;
+}
+
+.feature:hover .feature-icon {
+    background: var(--cyan);
+    color: #031329 !important;
+    box-shadow: 0 0 20px rgba(25, 217, 255, .25);
+    transform: translateY(-3px);
+}
+
+.feature p {
+    color: #e6f2ff !important;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.65;
+}
+
+/* STUDENT IMAGE */
+
+.student-image {
+    width: 100%;
+    height: clamp(135px, 23vh, 200px);
+    flex-shrink: 0;
+    margin-top: 16px;
+    overflow: hidden;
+
+    border: 1px solid #00baff;
+    border-radius: 13px;
+    background: #0a2440;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, .22);
+}
+
+.student-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 40%;
+    transition: transform .4s ease;
+}
+
+.student-image:hover img {
+    transform: scale(1.035);
+}
+
+/* RIGHT SIDE */
+
+.form-section {
+    min-width: 0;
+    min-height: 100vh;
+    padding: 25px 6%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        radial-gradient(circle at 100% 0%,
+            rgba(0, 157, 255, .12), transparent 40%),
+        #031329;
+}
+
+/* LOGIN CARD */
+
+.login-card {
+    width: 100%;
+    max-width: 480px;
+    padding: 30px 28px;
+
+    background: linear-gradient(145deg, #082444, #04172d);
+    border: 1px solid #087ac0;
+    border-radius: 20px;
+
+    box-shadow:
+        0 15px 45px rgba(0, 0, 0, .22),
+        inset 0 1px 0 rgba(255, 255, 255, .04);
+
+    animation: fadeIn .55s ease both;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* FORM HEADER */
+
+.form-heading {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.form-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 13px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--cyan) !important;
+    font-size: 28px;
+    background: rgba(0, 190, 255, .09);
+    border: 1px solid #087bb9;
+    border-radius: 16px;
+    box-shadow: 0 0 20px rgba(0, 190, 255, .08);
+}
+
+.form-heading h2 {
+    font-size: 28px;
+}
+
+.form-heading p {
+    margin-top: 7px;
+    color: #9dc4ef !important;
+    font-size: 12px;
+}
+
+/* LABELS */
+
+.field-label {
+    display: block;
+    margin: 17px 0 8px;
+    color: #e2efff !important;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* INPUT FIELDS */
+
+.input-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 48px;
+    padding: 0 13px;
+
+    background: #03152b;
+    border: 1px solid #245078;
+    border-radius: 10px;
+    transition: .25s ease;
+}
+
+.input-box > i {
+    flex-shrink: 0;
+    color: #8ac8ff !important;
+    font-size: 14px;
+}
+
+.input-box:focus-within {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(0, 190, 255, .09);
+}
+
+.input-box:focus-within > i {
+    color: var(--cyan) !important;
+}
+
+.input-box input {
+    width: 100%;
+    min-width: 0;
+    height: 46px;
+    outline: none;
+    border: none;
+    background: transparent;
+
+    font-family: inherit;
+    font-size: 12px;
+    color: #ffffff !important;
+}
+
+.input-box input::placeholder {
+    color: #83a6c9 !important;
+    opacity: 1;
+}
+
+/* PASSWORD TOGGLE */
+
+.toggle-password {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: #8ac8ff !important;
+    cursor: pointer;
+}
+
+.toggle-password:hover {
+    color: var(--cyan) !important;
+    background: rgba(0, 190, 255, .09);
+}
+
+/* REMEMBER / FORGOT */
+
+.form-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 17px 0;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #bfd4ed !important;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.remember-me input {
+    accent-color: var(--blue);
+    cursor: pointer;
+}
+
+.forgot-link {
+    color: var(--cyan) !important;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.forgot-link:hover {
+    color: #ffffff !important;
+    text-decoration: underline;
+}
+
+/* STATUS MESSAGE */
+
+.form-message {
+    display: none;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.form-message.error {
+    display: block;
+    color: #ffb4b4;
+    background: rgba(255, 60, 60, .08);
+    border: 1px solid rgba(255, 100, 100, .3);
+}
+
+.form-message.success {
+    display: block;
+    color: #9affcb;
+    background: rgba(40, 220, 140, .08);
+    border: 1px solid rgba(40, 220, 140, .3);
+}
+
+/* LOGIN BUTTON */
+
+.login-btn {
+    width: 100%;
+    min-height: 49px;
+    margin-top: 6px;
+    padding: 0 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    border: 1px solid #36d6ff;
+    border-radius: 10px;
+
+    background: linear-gradient(110deg, #078fe0, #20c3e5);
+    color: #031329 !important;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+
+    box-shadow: 0 6px 20px rgba(0, 157, 255, .12);
+    transition: .25s ease;
+}
+
+.login-btn i {
+    color: #031329 !important;
+    transition: transform .25s ease;
+}
+
+.login-btn:hover {
+    background: linear-gradient(110deg, #24baff, #62e7ff);
+    transform: translateY(-2px);
+    box-shadow: 0 9px 25px rgba(0, 190, 255, .22);
+}
+
+.login-btn:hover i {
+    transform: translateX(4px);
+}
+
+/* DIVIDER */
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 21px 0;
+}
+
+.divider span {
+    flex: 1;
+    height: 1px;
+    background: #294763;
+}
+
+.divider p {
+    color: #8eaccb !important;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+/* TEACHER LOGIN LINK */
+
+.student-btn {
+    width: 100%;
+    min-height: 47px;
+    padding: 11px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    color: #dbeeff !important;
+    background: rgba(10, 37, 63, .7);
+    border: 1px solid #315574;
+    border-radius: 10px;
+
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: .25s ease;
+}
+
+.student-btn i {
+    color: #8fd6ff !important;
+}
+
+.student-btn:hover {
+    border-color: var(--cyan);
+    background: rgba(0, 157, 255, .1);
+}
+
+/* FOOTER */
+
+.form-section footer {
+    width: 100%;
+    max-width: 480px;
+    margin-top: 19px;
+    text-align: center;
+
+    color: #7797b8 !important;
+    font-size: 10px;
+    line-height: 1.7;
+}
+
+/* TABLET */
+
+@media (max-width: 1000px) {
+    .login-page {
+        grid-template-columns: 50% 50%;
+    }
+
+    .welcome-section {
+        padding: 26px 5%;
+    }
+
+    .welcome-content h1 {
+        font-size: 32px;
+    }
+
+    .features {
+        gap: 12px;
+    }
+
+    .feature {
+        gap: 7px;
+    }
+
+    .feature-icon {
+        width: 38px;
+        height: 38px;
+    }
+
+    .login-card {
+        padding: 28px 22px;
+    }
+}
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+    .login-page {
+        grid-template-columns: 1fr;
+    }
+
+    .welcome-section {
+        min-height: auto;
+        padding: 25px 22px;
+    }
+
+    .welcome-content h1 {
+        font-size: clamp(30px, 7vw, 40px);
+    }
+
+    .student-image {
+        height: 190px;
+    }
+
+    .form-section {
+        min-height: auto;
+        padding: 28px 16px;
+    }
+
+    .login-card {
+        max-width: 480px;
+        padding: 30px 22px;
+    }
+}
+
+@media (max-width: 380px) {
+    .welcome-section {
+        padding: 22px 16px;
+    }
+
+    .welcome-content h1 {
+        font-size: 29px;
+    }
+
+    .login-card {
+        padding: 25px 17px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+        </style>
+        </head>
+
+<body>
+
+    <main class="login-page">
+
+        
+        <section class="welcome-section">
+
+            <div class="brand">
+                <i class="fa-solid fa-fingerprint brand-icon"></i>
+
+                <div>
+                    <h2>Smart<span>Attend</span></h2>
+                    <p>Face Recognition Attendance System</p>
+                </div>
+            </div>
+
+            <div class="welcome-content">
+                <h1>
+                    Smarter Attendance<br>
+                    for a <span>Brighter Future</span>
+                </h1>
+
+                <p class="description">
+                    Secure. Automated. Accurate.<br>
+                    Face and fingerprint-based attendance
+                    for modern educational institutions.
+                </p>
+
+                <div class="features">
+
+                    <div class="feature">
+                        <div class="feature-icon">
+                            <i class="fa-solid fa-user-check"></i>
+                        </div>
+                        <p>Face<br>Recognition</p>
+                    </div>
+
+                    <div class="feature">
+                        <div class="feature-icon">
+                            <i class="fa-solid fa-fingerprint"></i>
+                        </div>
+                        <p>Fingerprint<br>Verification</p>
+                    </div>
+
+                    <div class="feature">
+                        <div class="feature-icon">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <p>Secure<br>& Reliable</p>
+                    </div>
+                    
+
+                </div>
+            </div>
+
+            <!-- <p class="left-footer">SMARTATTEND • SMARTER CAMPUS</p> -->
+            <div class="student-image">
+            <img
+                src="img/login.jpeg"
+                alt="Students at an educational institution">
+        </div>
+
+        </section>
+
+
+        
+        <section class="form-section">
+
+            <!-- <div class="welcome-back">
+                <h3>Welcome Back!</h3>
+                <p>Log in to continue to SmartAttend</p>
+            </div> -->
+
+            <div class="login-card">
+
+                <div class="form-heading">
+                    <i class="fa-solid fa-fingerprint form-icon"></i>
+
+                    <h2>Smart<span>Attend</span></h2>
+                    <p>Login to Your Account</p>
+                </div>
+
+                <form id="loginForm" novalidate>
+
+                   
+                    <label for="username" class="field-label">
+                        Email Address
+                    </label>
+
+                    <div class="input-box">
+                        <i class="fa-regular fa-user"></i>
+
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="Enter your email address"
+                            autocomplete="username"
+                            required>
+                    </div>
+
+                    
+                    <label for="password" class="field-label">
+                        Password
+                    </label>
+
+                    <div class="input-box">
+                        <i class="fa-solid fa-lock"></i>
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required>
+
+                        <button
+                            type="button"
+                            id="togglePassword"
+                            class="toggle-password"
+                            aria-label="Show password"
+                            aria-pressed="false">
+
+                            <i class="fa-solid fa-eye"></i>
+
+                        </button>
+                    </div>
+
+                    
+                    <div class="form-options">
+
+                        <label class="remember-me">
+                            <input type="checkbox" id="rememberMe">
+                            <span>Remember Me</span>
+                        </label>
+
+                        <a href="#" id="forgotPassword"
+                           class="forgot-link">
+                            Forgot Password?
+                        </a>
+
+                    </div>
+
+                    
+                    <p id="formMessage"
+                       class="form-message"
+                       role="status"
+                       aria-live="polite"></p>
+
+                
+                    <button type="submit" class="login-btn">
+                        LOGIN
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                    <div class="divider">
+                        <span></span>
+                        <p>OR</p>
+                        <span></span>
+                    </div>
+
+                    
+                    <a href="teacher_login.html"
+                       class="student-btn">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        Login as teacher
+                    </a>
+
+                    
+                    <!-- <p class="signup-text">
+                        Don't have an account?
+                        <a href="student_signup.html">Sign Up</a>
+                    </p> -->
+
+                </form>
+
+            </div>
+             
+  
+
+
+
+
+            <footer>
+                © 2026 SmartAttend. All rights reserved.
+            </footer>
+
+        </section>
+
+    </main>
+              <script>
+"use strict";
+const loginForm = document.getElementById("loginForm");
+const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
+const togglePassword = document.getElementById("togglePassword");
+const formMessage = document.getElementById("formMessage");
+const forgotPassword = document.getElementById("forgotPassword");
+function showMessage(text, type) {
+  formMessage.textContent = text;
+  formMessage.className = "form-message " + type;
+}
+togglePassword.addEventListener("click", () => {
+  const show = passwordInput.type === "password";
+  passwordInput.type = show ? "text" : "password";
+  togglePassword.innerHTML = show ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
+  togglePassword.setAttribute("aria-label", show ? "Hide password" : "Show password");
+  togglePassword.setAttribute("aria-pressed", String(show));
+});
+loginForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  const email = usernameInput.value.trim();
+  const password = passwordInput.value;
+  if (!email || !password) { showMessage("Enter your email and password.", "error"); return; }
+  try {
+    const response = await fetch("/api/students/login", {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({email, password})
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Login failed.");
+    sessionStorage.setItem("smartattendStudent", JSON.stringify(data.student));
+    showMessage("Login successful. Opening student records...", "success");
+    setTimeout(() => {
+    location.href = "student_dashboard.html";
+}, 700);
+  } catch (error) { showMessage(error.message || "Cannot connect to server.", "error"); }
+});
+forgotPassword.addEventListener("click", event => {
+  event.preventDefault();
+  showMessage("Password reset is not configured. Contact your administrator.", "error");
+});
+</script>
+
+</body>
+</html>
