@@ -842,47 +842,73 @@ body {
 
     </main>
               <script>
+
 "use strict";
+
 const loginForm = document.getElementById("loginForm");
 const usernameInput = document.getElementById("username");
 const passwordInput = document.getElementById("password");
-const togglePassword = document.getElementById("togglePassword");
 const formMessage = document.getElementById("formMessage");
-const forgotPassword = document.getElementById("forgotPassword");
-function showMessage(text, type) {
-  formMessage.textContent = text;
-  formMessage.className = "form-message " + type;
-}
-togglePassword.addEventListener("click", () => {
-  const show = passwordInput.type === "password";
-  passwordInput.type = show ? "text" : "password";
-  togglePassword.innerHTML = show ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
-  togglePassword.setAttribute("aria-label", show ? "Hide password" : "Show password");
-  togglePassword.setAttribute("aria-pressed", String(show));
-});
-loginForm.addEventListener("submit", async event => {
-  event.preventDefault();
-  const email = usernameInput.value.trim();
-  const password = passwordInput.value;
-  if (!email || !password) { showMessage("Enter your email and password.", "error"); return; }
-  try {
-    const response = await fetch("/api/students/login", {
-      method: "POST", headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({email, password})
+const togglePassword = document.getElementById("togglePassword");
+
+if (togglePassword) {
+    togglePassword.addEventListener("click", () => {
+        const show = passwordInput.type === "password";
+        passwordInput.type = show ? "text" : "password";
+
+        togglePassword.setAttribute(
+            "aria-label",
+            show ? "Hide password" : "Show password"
+        );
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || "Login failed.");
-    sessionStorage.setItem("smartattendStudent", JSON.stringify(data.student));
-    showMessage("Login successful. Opening student records...", "success");
-    setTimeout(() => {
-    location.href = "student_dashboard.html";
-}, 700);
-  } catch (error) { showMessage(error.message || "Cannot connect to server.", "error"); }
+}
+
+loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const email = usernameInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+        formMessage.textContent = "Enter your email and password.";
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/students/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || "Invalid email or password.");
+        }
+
+        if (!data.student || !data.student.id) {
+            throw new Error("Student details were not received.");
+        }
+
+        sessionStorage.setItem(
+            "smartattendStudent",
+            JSON.stringify(data.student)
+        );
+
+        formMessage.textContent = "Login successful! Opening dashboard...";
+
+        // Open the student dashboard
+        window.location.href = "/student_dashboard.html";
+
+    } catch (error) {
+        formMessage.textContent =
+            error.message || "Unable to connect to server.";
+    }
 });
-forgotPassword.addEventListener("click", event => {
-  event.preventDefault();
-  showMessage("Password reset is not configured. Contact your administrator.", "error");
-});
+
 </script>
 
 </body>

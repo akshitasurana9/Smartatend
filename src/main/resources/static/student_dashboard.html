@@ -1,0 +1,204 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Dashboard | SmartAttend</title>
+
+<link rel="stylesheet" href="student_dashboard.css">
+</head>
+
+<body>
+<div class="layout">
+
+<aside class="sidebar">
+    <div class="brand">◉ SmartAttend</div>
+    <div class="subtitle">Student Portal</div>
+    <p class="nav-heading">STUDENT MENU</p>
+
+    <nav aria-label="Student navigation">
+        <button class="nav-link active" data-page="dashboard">▦ &nbsp; Dashboard</button>
+        <button class="nav-link" data-page="take-attendance">📷 &nbsp; Take Attendance</button>
+        <button class="nav-link" data-page="attendance">◷ &nbsp; My Attendance</button>
+        <button class="nav-link" data-page="classes">▤ &nbsp; My Classes</button>
+        <button class="nav-link" data-page="profile">♙ &nbsp; My Profile</button>
+    </nav>
+
+    <div class="sidebar-bottom">
+        <strong>Student Account</strong>
+        <p id="sidebarStudentLabel">Sign in to view your account</p>
+        <p>Smart Attendance System</p>
+    </div>
+</aside>
+
+<main class="main">
+    <header class="topbar">
+        <div>
+            <p class="eyebrow">SMART ATTENDANCE / STUDENT</p>
+            <h1 id="pageTitle">Dashboard</h1>
+        </div>
+        <div class="profile">
+            <div class="avatar" id="topAvatar">S</div>
+            <div>
+                <strong id="topName">Student</strong>
+                <p class="muted" id="topCourse">Student account</p>
+            </div>
+        </div>
+    </header>
+<!-- DASHBOARD -->
+    <section class="page active" id="dashboard">
+        <div class="welcome">
+            <span>STUDENT PORTAL · SESSION 2026–2027</span>
+            <h2>Welcome back, <span id="welcomeName">Student</span>! 👋</h2>
+            <p>Your attendance, classes and academic details will appear here after your account is connected.</p>
+        </div>
+
+        <div class="stats-grid">
+            <article class="stat-card">
+                <p>Total Classes</p><h2 id="totalClasses">—</h2>
+                <small>Based on your records</small>
+            </article>
+            <article class="stat-card">
+                <p>Present</p><h2 class="green" id="presentCount">—</h2>
+                <small>Verified attendance</small>
+            </article>
+            <article class="stat-card">
+                <p>Absent</p><h2 class="red" id="absentCount">—</h2>
+                <small>Recorded absences</small>
+            </article>
+            <article class="stat-card">
+                <p>Attendance Rate</p><h2 class="blue" id="attendanceRate">—</h2>
+                <small>Calculated from your records</small>
+            </article>
+        </div>
+
+        <div class="content-grid">
+            <article class="panel">
+                <div class="panel-heading">
+                    <h3>Recent Attendance</h3>
+                    <p class="muted">Your latest recorded attendance</p>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Date</th><th>Subject</th><th>Status</th></tr></thead>
+                        <tbody id="recentTable"></tbody>
+                    </table>
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-heading">
+                    <h3>Attendance Summary</h3>
+                    <p class="muted">Calculated from official attendance records</p>
+                </div>
+                <p class="muted">Attendance percentage</p>
+                <h2 id="summaryRate" style="margin:12px 0">—</h2>
+                <div style="height:10px;background:#eceefa;border-radius:8px;overflow:hidden">
+                    <div id="progressBar" style="height:100%;width:0%;background:#6665d8;border-radius:8px"></div>
+                </div>
+                <p class="muted" style="margin-top:18px" id="summaryMessage">Your attendance summary will appear when records are available.</p>
+            </article>
+        </div>
+    </section>
+
+    <!-- TAKE ATTENDANCE / FACE RECOGNITION -->
+    <section class="page" id="take-attendance">
+        <div class="panel">
+            <div class="panel-heading">
+                <h3>Face Recognition Attendance</h3>
+                <p class="muted">Use your webcam to capture a frame for identity verification.</p>
+            </div>
+
+            <div class="notice">
+                Camera capture alone does not recognize a person or mark attendance.
+                The registered face must be verified by the backend. If your system requires
+                both face and fingerprint, both checks must succeed before attendance is saved.
+            </div>
+
+            <div class="face-layout">
+                <div class="camera-box">
+                    <video id="faceVideo" autoplay playsinline muted></video>
+                    <div id="cameraPlaceholder">
+                        <div style="font-size:48px">📷</div>
+                        <p>Camera preview will appear here</p>
+                    </div>
+                </div>
+
+                <div class="face-info">
+                    <h3>Verify Your Face</h3>
+                    <p class="muted" style="margin:12px 0 20px">
+                        Sit in a well-lit area and look directly at the camera.
+                    </p>
+
+                    <button class="action-btn" id="startCamera">Start Camera</button>
+                    <button class="action-btn" id="captureFace" disabled>Capture Face</button>
+                    <button class="action-btn secondary" id="stopCamera" disabled>Stop Camera</button>
+
+                    <p id="faceStatus" class="face-status" role="status" aria-live="polite">
+                        Camera not started.
+                    </p>
+
+                    <ul class="check-list">
+                        <li>Allow camera permission when prompted.</li>
+                        <li>Use localhost or HTTPS for camera access.</li>
+                        <li>Stop the camera when finished.</li>
+                    </ul>
+                    <canvas id="faceCanvas" hidden></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MY ATTENDANCE -->
+    <section class="page" id="attendance">
+        <div class="panel">
+            <div class="panel-heading">
+                <h3>My Attendance History</h3>
+                <p class="muted">Date-wise record of your attendance</p>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Date</th><th>Subject</th><th>Status</th></tr></thead>
+                    <tbody id="historyTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- MY CLASSES -->
+    <section class="page" id="classes">
+        <div class="panel-heading">
+            <h3>My Classes</h3>
+            <p class="muted">Your academic course and subjects</p>
+        </div>
+        <div class="class-grid" id="classGrid">
+            <article class="panel"><p class="muted">No classes are available yet. Your assigned classes will appear here after the teacher adds them and the backend is connected.</p></article>
+        </div>
+    </section>
+
+    <!-- MY PROFILE -->
+    <section class="page" id="profile">
+        <article class="panel">
+            <div class="panel-heading">
+                <h3>My Student Profile</h3>
+                <p class="muted">Your registered academic information</p>
+            </div>
+            <div class="profile-details">
+                <div class="detail"><small>Student Name</small><p id="profileName">Not available</p></div>
+                <div class="detail"><small>Student ID</small><p id="profileId">Not available</p></div>
+                <div class="detail"><small>Course</small><p id="profileCourse">Not available</p></div>
+                <div class="detail"><small>Academic Year</small><p id="profileYear">Not available</p></div>
+                <div class="detail"><small>Academic Session</small><p id="profileSession">Not available</p></div>
+                <div class="detail"><small>Account Type</small><p>Student</p></div>
+            </div>
+        </article>
+    </section>
+
+    <footer>© 2026 SmartAttend · Smart Attendance System</footer>
+</main>
+</div>
+
+<script src="js/student_dashboard.js" defer></script>
+</body>
+</html>

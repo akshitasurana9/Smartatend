@@ -1,12 +1,9 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>SmartAttend | Teacher Dashboard</title>
-
     <link rel="stylesheet" href="styledash.css">
 </head>
 <body>
@@ -15,7 +12,6 @@
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
-
         <div class="brand">
             <div class="brand-icon">SA</div>
             <div>
@@ -30,65 +26,46 @@
             <button class="nav-link active" data-page="dashboard">
                 ▦ Dashboard
             </button>
-
             <button class="nav-link" data-page="students">
                 ♙ Students
             </button>
-
             <button class="nav-link" data-page="attendance">
                 ◉ Attendance
             </button>
-
             <button class="nav-link" data-page="credentials">
                 ▣ Student Login IDs
             </button>
-
             <button class="nav-link" data-page="settings">
                 ⚙ Settings
             </button>
         </nav>
 
-        <!-- TEACHER PROFILE + LOGOUT BUTTON -->
         <div class="sidebar-bottom">
-
             <div class="teacher-avatar">T</div>
-
             <div class="teacher-info">
                 <strong>Teacher</strong>
                 <small>Administrator</small>
             </div>
-
-            <button
-                type="button"
-                id="logoutBtn"
-                class="icon-button"
-                title="Logout"
-                aria-label="Logout">
-                ↗
-            </button>
-
+            <button type="button" id="logoutBtn"
+                    class="icon-button" title="Logout"
+                    aria-label="Logout">↗</button>
         </div>
-
     </aside>
 
     <!-- MAIN CONTENT -->
     <main class="main">
 
         <header class="topbar">
-
             <div>
                 <p class="eyebrow">SMART ATTENDANCE / COLLEGE</p>
                 <h1 id="pageTitle">Teacher Dashboard</h1>
             </div>
-
             <div class="topbar-right">
                 <span class="system-status">
                     <span></span> Dashboard Ready
                 </span>
-
                 <div class="teacher-avatar">T</div>
             </div>
-
         </header>
 
         <div id="notice" class="notice hidden" role="status"></div>
@@ -105,14 +82,12 @@
                         attendance from one place.
                     </p>
                 </div>
-
                 <button class="primary-btn" data-go="students">
                     ＋ Add Student
                 </button>
             </div>
 
             <div class="stats-grid">
-
                 <article class="stat-card">
                     <div class="stat-icon purple">♙</div>
                     <p>Total Students</p>
@@ -124,7 +99,7 @@
                     <div class="stat-icon green">✓</div>
                     <p>Present Today</p>
                     <h2 id="presentCount">0</h2>
-                    <small>Marked in this browser demo</small>
+                    <small>Marked present today</small>
                 </article>
 
                 <article class="stat-card">
@@ -138,15 +113,12 @@
                     <div class="stat-icon blue">▥</div>
                     <p>Attendance Rate</p>
                     <h2 id="attendanceRate">0%</h2>
-                    <small>Today's demo rate</small>
+                    <small>Today's attendance rate</small>
                 </article>
-
             </div>
 
             <div class="content-grid">
-
                 <article class="panel">
-
                     <div class="panel-heading">
                         <div>
                             <h3>Quick Actions</h3>
@@ -155,7 +127,6 @@
                     </div>
 
                     <div class="quick-grid">
-
                         <button class="quick-action" data-go="students">
                             <span class="quick-icon purple">＋</span>
                             <strong>Add / Delete Students</strong>
@@ -173,13 +144,10 @@
                             <strong>Mark Attendance</strong>
                             <small>Record today's attendance</small>
                         </button>
-
                     </div>
-
                 </article>
 
                 <article class="panel">
-
                     <div class="panel-heading">
                         <div>
                             <h3>How student login works</h3>
@@ -190,31 +158,27 @@
                     <ol class="steps">
                         <li>Add the student with name, class and email.</li>
                         <li>SmartAttend generates a unique Student ID.</li>
-                        <li>Set a temporary password and share credentials privately.</li>
-                        <li>Student enters the ID and password on the student login page.</li>
+                        <li>Set a temporary password and share it privately.</li>
+                        <li>The student enters their ID and password to log in.</li>
                     </ol>
 
                     <div class="info-box">
                         <strong>Demo storage</strong>
                         <p>
-                            Records are saved in this browser using localStorage.
-                            Use the Java + MySQL backend for shared, secure accounts
-                            across devices.
+                            Student records are retrieved through the configured
+                            student API. Attendance in this version is stored
+                            in browser localStorage.
                         </p>
                     </div>
-
                 </article>
-
             </div>
 
             <article class="panel">
-
                 <div class="panel-heading">
                     <div>
                         <h3>Student Directory</h3>
                         <p>Recently added student records</p>
                     </div>
-
                     <button class="secondary-btn" data-go="students">
                         Manage Students →
                     </button>
@@ -230,18 +194,14 @@
                                 <th>Today's Status</th>
                             </tr>
                         </thead>
-
                         <tbody id="dashboardStudents"></tbody>
                     </table>
                 </div>
-
             </article>
-
         </section>
 
         <!-- STUDENTS PAGE -->
         <section class="page" id="students">
-
             <div class="section-intro">
                 <h2>Manage Students</h2>
                 <p>Add a student, generate their login ID, or remove a record.</p>
@@ -250,7 +210,6 @@
             <div class="content-grid students-layout">
 
                 <article class="panel">
-
                     <div class="panel-heading">
                         <div>
                             <h3>Add New Student</h3>
@@ -259,22 +218,16 @@
                     </div>
 
                     <form id="studentForm">
-
                         <label class="field-label" for="studentName">
                             Full name *
                         </label>
-
-                        <input
-                            class="form-input"
-                            id="studentName"
-                            required
-                            maxlength="80"
-                            placeholder="e.g. Riya Sharma">
+                        <input class="form-input" id="studentName"
+                               required maxlength="80"
+                               placeholder="e.g. Riya Sharma">
 
                         <label class="field-label" for="studentClass">
                             Class *
                         </label>
-
                         <select class="form-input" id="studentClass" required>
                             <option value="">Select class</option>
                             <option>BCA 1st Year</option>
@@ -287,83 +240,60 @@
                         <label class="field-label" for="studentEmail">
                             Email
                         </label>
+                        <input class="form-input" id="studentEmail"
+                               type="email"
+                               placeholder="student@example.com">
 
-                        <input
-                            class="form-input"
-                            id="studentEmail"
-                            type="email"
-                            placeholder="student@example.com">
-
-                        <!-- STUDENT PHOTO UPLOAD -->
                         <label class="field-label" for="studentPhoto">
                             Student Passport Size Photo *
                         </label>
 
                         <div class="photo-upload-box">
+                            <img id="photoPreview"
+                                 class="photo-preview hidden"
+                                 alt="Student passport size photo">
 
-                            <img
-                                id="photoPreview"
-                                class="photo-preview hidden"
-                                alt="Student passport size photo">
-
-                            <label
-                                for="studentPhoto"
-                                class="photo-upload-label">
-
+                            <label for="studentPhoto"
+                                   class="photo-upload-label">
                                 <span class="upload-icon">📷</span>
                                 <strong>Upload Passport Size Photo</strong>
                                 <small>One photo per student ID</small>
                                 <small>JPG, PNG or WEBP · Max 2 MB</small>
-
                             </label>
 
-                            <input
-                                class="form-input"
-                                type="file"
-                                id="studentPhoto"
-                                accept="image/jpeg,image/png,image/webp"
-                                required>
-
+                            <input class="form-input" type="file"
+                                   id="studentPhoto"
+                                   accept="image/jpeg,image/png,image/webp"
+                                   required>
                         </div>
 
                         <label class="field-label" for="studentPassword">
                             Temporary login password *
                         </label>
-
-                        <input
-                            class="form-input"
-                            id="studentPassword"
-                            required
-                            minlength="6"
-                            autocomplete="new-password"
-                            placeholder="At least 6 characters">
+                        <input class="form-input" id="studentPassword"
+                               type="password" required minlength="6"
+                               autocomplete="new-password"
+                               placeholder="At least 6 characters">
 
                         <button class="primary-btn full-btn" type="submit">
                             ＋ Add Student &amp; Generate ID
                         </button>
-
                     </form>
 
                     <p class="muted small-note">
-                        For a real system, store a password hash on the server—
-                        never store plain-text passwords in MySQL.
+                        In a production system, store only a securely generated
+                        password hash on the server.
                     </p>
-
                 </article>
 
                 <article class="panel">
-
                     <div class="panel-heading">
                         <div>
                             <h3>Student Directory</h3>
                             <p id="studentCountLabel">0 students</p>
                         </div>
-
-                        <input
-                            id="studentSearch"
-                            class="search-input"
-                            type="search"
-                            placeholder="Search students">
+                        <input id="studentSearch" class="search-input"
+                               type="search" placeholder="Search students">
                     </div>
 
                     <div class="table-wrap">
@@ -376,41 +306,31 @@
                                     <th>Action</th>
                                 </tr>
                             </thead>
-
                             <tbody id="studentTable"></tbody>
                         </table>
                     </div>
-
                 </article>
-
             </div>
-
         </section>
 
         <!-- STUDENT CREDENTIALS PAGE -->
         <section class="page" id="credentials">
-
             <div class="section-intro">
                 <h2>Student Login IDs</h2>
                 <p>Find a student's ID to help them sign in.</p>
             </div>
 
             <article class="panel">
-
                 <div class="panel-heading">
                     <div>
                         <h3>Assigned Login IDs</h3>
                         <p>
-                            Student ID is the username; students should also use
-                            their password.
+                            Student ID is the username. Students also need
+                            their password to log in.
                         </p>
                     </div>
-
-                    <input
-                        id="credentialSearch"
-                        class="search-input"
-                        type="search"
-                        placeholder="Search ID or name">
+                    <input id="credentialSearch" class="search-input"
+                           type="search" placeholder="Search ID or name">
                 </div>
 
                 <div class="table-wrap">
@@ -424,7 +344,6 @@
                                 <th>Login</th>
                             </tr>
                         </thead>
-
                         <tbody id="credentialTable"></tbody>
                     </table>
                 </div>
@@ -432,42 +351,58 @@
                 <div class="info-box">
                     <strong>Security note</strong>
                     <p>
-                        This demo does not display saved passwords. Give the
-                        temporary password to the student securely and have them
-                        change it after their first login.
+                        Do not display or share stored passwords.
+                        Share temporary credentials securely.
                     </p>
                 </div>
-
             </article>
-
         </section>
 
-        <!-- ATTENDANCE PAGE -->
+        <!-- ONE-DAY ATTENDANCE PAGE -->
         <section class="page" id="attendance">
-
             <div class="section-intro">
-                <h2>Today's Attendance</h2>
-                <p>
-                    Mark a student present for this browser demo.
-                    Face recognition is not connected here.
-                </p>
+                <h2>Daily Attendance Register</h2>
+                <p>Mark each student's attendance once per day.</p>
             </div>
 
             <article class="panel">
-
                 <div class="panel-heading">
                     <div>
-                        <h3>Attendance Register</h3>
+                        <h3>Today's Attendance</h3>
                         <p id="attendanceDate"></p>
                     </div>
 
-                    <input
-                        id="attendanceSearch"
-                        class="search-input"
-                        type="search"
-                        placeholder="Search students">
+                    <input id="attendanceSearch"
+                           class="search-input"
+                           type="search"
+                           placeholder="Search students"
+                           aria-label="Search students for attendance">
                 </div>
 
+                <!-- DAILY ATTENDANCE SUMMARY -->
+                <div class="stats-grid session-stats">
+                    <article class="stat-card">
+                        <p>Total Students</p>
+                        <h2 id="sessionTotal">0</h2>
+                    </article>
+
+                    <article class="stat-card">
+                        <p>Present</p>
+                        <h2 id="sessionPresent">0</h2>
+                    </article>
+
+                    <article class="stat-card">
+                        <p>Not Marked</p>
+                        <h2 id="sessionUnmarked">0</h2>
+                    </article>
+
+                    <article class="stat-card">
+                        <p>Attendance Rate</p>
+                        <h2 id="sessionRate">0%</h2>
+                    </article>
+                </div>
+
+                <!-- DAILY ATTENDANCE TABLE -->
                 <div class="table-wrap">
                     <table>
                         <thead>
@@ -475,29 +410,34 @@
                                 <th>Student ID</th>
                                 <th>Name</th>
                                 <th>Class</th>
-                                <th>Status</th>
+                                <th>Daily Status</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
-
                         <tbody id="attendanceTable"></tbody>
                     </table>
                 </div>
 
+                <div class="info-box">
+                    <strong>Attendance note</strong>
+                    <p>
+                        Attendance is marked once per student per day in this
+                        browser demo. This page does not itself perform face
+                        or fingerprint verification, and attendance is not
+                        saved to MySQL by this HTML alone.
+                    </p>
+                </div>
             </article>
-
         </section>
 
         <!-- SETTINGS PAGE -->
         <section class="page" id="settings">
-
             <div class="section-intro">
                 <h2>Settings</h2>
                 <p>About this starter dashboard.</p>
             </div>
 
             <article class="panel settings-panel">
-
                 <h3>System Information</h3>
 
                 <div class="setting-row">
@@ -520,8 +460,8 @@
                     <div>
                         <strong>Production requirement</strong>
                         <p>
-                            Spring Boot REST API, MySQL, authentication
-                            and password hashing.
+                            Spring Boot REST API, MySQL, authentication,
+                            password hashing and biometric verification.
                         </p>
                     </div>
                 </div>
@@ -529,36 +469,26 @@
                 <button id="clearDemoBtn" class="danger-btn">
                     Clear all demo records
                 </button>
-
             </article>
-
         </section>
 
         <footer>© 2026 SmartAttend · Smart Attendance System</footer>
-
     </main>
-
 </div>
 
 <!-- STUDENT CREDENTIAL MODAL -->
-<div
-    class="modal-backdrop hidden"
-    id="credentialModal"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="modalTitle">
+<div class="modal-backdrop hidden"
+     id="credentialModal"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="modalTitle">
 
     <div class="modal">
-
-        <button
-            class="modal-close"
-            id="closeModal"
-            aria-label="Close">×</button>
+        <button class="modal-close" id="closeModal"
+                aria-label="Close">×</button>
 
         <div class="success-mark">✓</div>
-
         <h2 id="modalTitle">Student Added Successfully</h2>
-
         <p>Share these login details privately with the student.</p>
 
         <div class="credential-line">
@@ -574,20 +504,16 @@
 
         <div class="info-box">
             <p>
-                The password is not saved or shown again in this demo.
-                Make sure you securely share it with the student now.
+                The password is not shown again in this demo.
+                Share it securely with the student.
             </p>
         </div>
 
-        <button id="doneModal" class="primary-btn full-btn">
-            Done
-        </button>
-
+        <button id="doneModal" class="primary-btn full-btn">Done</button>
     </div>
-
 </div>
 
-<!-- MAIN DASHBOARD SCRIPT -->
+<!-- MAIN DASHBOARD JAVASCRIPT -->
 <script src="js/teacher_dash.js"></script>
 
 <!-- LOGOUT FUNCTION -->
@@ -596,15 +522,12 @@
 
     if (logoutBtn) {
         logoutBtn.addEventListener("click", function () {
-            const confirmLogout = confirm(
-                "Are you sure you want to logout?"
-            );
+            const confirmLogout = confirm("Are you sure you want to logout?");
 
             if (confirmLogout) {
                 sessionStorage.removeItem("teacher");
                 sessionStorage.removeItem("teacherId");
                 sessionStorage.removeItem("teacherEmail");
-
                 window.location.href = "teacher_login.html";
             }
         });

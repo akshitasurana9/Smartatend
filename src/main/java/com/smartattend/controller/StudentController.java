@@ -1,6 +1,9 @@
 
 package com.smartattend.controller;
 
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import com.smartattend.entity.Student;
 import com.smartattend.repository.StudentRepository;
 
