@@ -1,4 +1,3 @@
-
 "use strict";
 
 // ============================================
@@ -98,7 +97,9 @@ navButtons.forEach(button => {
 function renderAttendance(records, tableId) {
     const table = document.getElementById(tableId);
 
-    if (!table) return;
+    if (!table) {
+        return;
+    }
 
     table.replaceChildren();
 
@@ -111,6 +112,7 @@ function renderAttendance(records, tableId) {
 
         row.appendChild(cell);
         table.appendChild(row);
+
         return;
     }
 
@@ -132,11 +134,12 @@ function renderAttendance(records, tableId) {
                 ? markedAt.toLocaleString()
                 : "—";
 
-        // Current API does not return subject names.
         subjectCell.textContent =
             record.subject ?? `Session ${record.sessionId ?? "—"}`;
 
-        const status = String(record.status ?? "Unknown").toUpperCase();
+        const status = String(
+            record.status ?? "Unknown"
+        ).toUpperCase();
 
         badge.textContent = status;
 
@@ -193,7 +196,6 @@ async function loadAttendanceHistory() {
     }
 
     const historyTable = document.getElementById("historyTable");
-    const recentTable = document.getElementById("recentTable");
 
     try {
         if (historyTable) {
@@ -210,7 +212,9 @@ async function loadAttendanceHistory() {
         }
 
         const response = await fetch(
-            `/api/attendance/student?email=${encodeURIComponent(currentStudent.email)}`,
+            `/api/attendance/student?email=${encodeURIComponent(
+                currentStudent.email
+            )}`,
             {
                 method: "GET",
                 credentials: "same-origin",
@@ -220,11 +224,23 @@ async function loadAttendanceHistory() {
             }
         );
 
-        const data = await response.json();
+        const responseText = await response.text();
+
+        let data = {};
+
+        try {
+            data = responseText ? JSON.parse(responseText) : {};
+        } catch (error) {
+            throw new Error(
+                `The attendance server returned an invalid response (HTTP ${response.status}).`
+            );
+        }
 
         if (!response.ok) {
             throw new Error(
-                data.message || "Could not load attendance history."
+                data.message ||
+                data.error ||
+                `Could not load attendance history (HTTP ${response.status}).`
             );
         }
 
@@ -232,13 +248,13 @@ async function loadAttendanceHistory() {
             ? data.attendance
             : [];
 
-        // Full attendance history
+        // Display complete attendance history.
         renderAttendance(records, "historyTable");
 
-        // Recent attendance: show the latest five records
+        // Display the five most recent records.
         renderAttendance(records.slice(0, 5), "recentTable");
 
-        // Summary counts returned by the API
+        // Read summary counts from the API.
         const present = Number(data.present ?? 0);
         const absent = Number(data.absent ?? 0);
         const total = Number(data.totalRecords ?? records.length);
@@ -279,7 +295,9 @@ async function loadAttendanceHistory() {
         ["historyTable", "recentTable"].forEach(tableId => {
             const table = document.getElementById(tableId);
 
-            if (!table) return;
+            if (!table) {
+                return;
+            }
 
             table.replaceChildren();
 
@@ -305,6 +323,7 @@ loadAttendanceHistory();
 
 const faceVideo = document.getElementById("faceVideo");
 const faceCanvas = document.getElementById("faceCanvas");
+
 const cameraPlaceholder = document.getElementById("cameraPlaceholder");
 const faceStatus = document.getElementById("faceStatus");
 
@@ -320,11 +339,33 @@ let cameraStream = null;
 
 if (startCameraButton) {
     startCameraButton.addEventListener("click", async () => {
-        if (!navigator.mediaDevices ||
-            !navigator.mediaDevices.getUserMedia) {
+        if (!faceVideo || !captureFaceButton || !stopCameraButton) {
+            if (faceStatus) {
+                faceStatus.textContent =
+                    "Camera elements are missing. Check student_dashboard.html.";
+            }
 
-            faceStatus.textContent =
-                "Camera is unavailable. Open this page through localhost or HTTPS.";
+            return;
+        }
+
+        if (
+            !navigator.mediaDevices ||
+            !navigator.mediaDevices.getUserMedia
+        ) {
+            if (faceStatus) {
+                faceStatus.textContent =
+                    "Camera access is unavailable. Open this page through localhost or HTTPS.";
+            }
+
+            return;
+        }
+
+        // Avoid starting the camera more than once.
+        if (cameraStream) {
+            if (faceStatus) {
+                faceStatus.textContent =
+                    "The camera is already running.";
+            }
 
             return;
         }
@@ -332,39 +373,66 @@ if (startCameraButton) {
         startCameraButton.disabled = true;
 
         if (faceStatus) {
-            faceStatus.textContent = "Requesting camera permission...";
+            faceStatus.textContent =
+                "Requesting camera permission...";
         }
 
         try {
             cameraStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: "user" },
+                video: {
+                    facingMode: "user",
+                    width: {
+                        ideal: 640
+                    },
+                    height: {
+                        ideal: 480
+                    }
+                },
                 audio: false
             });
 
             faceVideo.srcObject = cameraStream;
             faceVideo.style.display = "block";
 
+            await faceVideo.play();
+
             if (cameraPlaceholder) {
                 cameraPlaceholder.style.display = "none";
             }
 
-            await faceVideo.play();
-
             captureFaceButton.disabled = false;
             stopCameraButton.disabled = false;
 
-            faceStatus.textContent =
-                "Camera is running. Capture your face to continue.";
-
-        } catch (error) {
-            cameraStream = null;
-            startCameraButton.disabled = false;
-
             if (faceStatus) {
                 faceStatus.textContent =
-                    error.name === "NotAllowedError"
-                        ? "Camera permission denied. Allow camera access in browser settings."
-                        : "Could not start camera. Check the camera and browser permissions.";
+                    "Camera is running. Position your face clearly and select Capture Face.";
+            }
+
+        } catch (error) {
+            console.error("Camera start error:", error);
+
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+
+            faceVideo.srcObject = null;
+
+            startCameraButton.disabled = false;
+            captureFaceButton.disabled = true;
+            stopCameraButton.disabled = true;
+
+            if (faceStatus) {
+                if (error.name === "NotAllowedError") {
+                    faceStatus.textContent =
+                        "Camera permission was denied. Allow camera access in your browser settings.";
+                } else if (error.name === "NotFoundError") {
+                    faceStatus.textContent =
+                        "No camera was found. Connect a camera and try again.";
+                } else {
+                    faceStatus.textContent =
+                        error.message || "Could not start the camera.";
+                }
             }
         }
     });
@@ -376,107 +444,216 @@ if (startCameraButton) {
 
 if (captureFaceButton) {
     captureFaceButton.addEventListener("click", async () => {
+        if (!faceStatus || !faceVideo || !faceCanvas) {
+            alert(
+                "Camera elements are missing. Check student_dashboard.html."
+            );
+
+            return;
+        }
+
         if (!cameraStream || !faceVideo.videoWidth) {
-            faceStatus.textContent = "Start the camera first.";
+            faceStatus.textContent =
+                "Start the camera and wait for the video to appear.";
+
             return;
         }
 
         if (!currentStudent || !currentStudent.id) {
             faceStatus.textContent =
-                "Student login details not found. Please log in again.";
+                "Student login information is missing. Please log in again.";
+
             return;
         }
 
-        faceCanvas.width = faceVideo.videoWidth;
-        faceCanvas.height = faceVideo.videoHeight;
-
-        const context = faceCanvas.getContext("2d");
-
-        context.drawImage(
-            faceVideo,
-            0,
-            0,
-            faceCanvas.width,
-            faceCanvas.height
-        );
-
         captureFaceButton.disabled = true;
-        faceStatus.textContent = "Checking your face...";
+
+        faceStatus.textContent =
+            "Capturing your face...";
 
         try {
-            const livePhoto = await new Promise((resolve, reject) => {
-                faceCanvas.toBlob(blob => {
-                    if (blob) {
-                        resolve(blob);
-                    } else {
-                        reject(new Error("Could not capture the photo."));
-                    }
-                }, "image/jpeg", 0.9);
-            });
+            // Capture the current camera frame.
+            faceCanvas.width = faceVideo.videoWidth;
+            faceCanvas.height = faceVideo.videoHeight;
 
-            const formData = new FormData();
+            const context = faceCanvas.getContext("2d");
 
-            formData.append("livePhoto", livePhoto, "live.jpg");
-
-            const response = await fetch(
-                `/api/face/verify/${encodeURIComponent(currentStudent.id)}`,
-                {
-                    method: "POST",
-                    body: formData,
-                    credentials: "same-origin"
-                }
-            );
-
-            let result;
-
-            try {
-                result = await response.json();
-            } catch {
+            if (!context) {
                 throw new Error(
-                    "Server returned an invalid response. Check the backend."
+                    "Could not access the camera image."
                 );
             }
 
-            if (!response.ok) {
-                faceStatus.textContent =
-                    result.message ||
-                    "Face verification or attendance saving failed.";
+            context.drawImage(
+                faceVideo,
+                0,
+                0,
+                faceCanvas.width,
+                faceCanvas.height
+            );
 
-                return;
+            // Convert the image into a JPEG Blob.
+            const livePhoto = await new Promise((resolve, reject) => {
+                faceCanvas.toBlob(
+                    blob => {
+                        if (blob) {
+                            resolve(blob);
+                        } else {
+                            reject(
+                                new Error("Could not capture the photo.")
+                            );
+                        }
+                    },
+                    "image/jpeg",
+                    0.9
+                );
+            });
+
+            // Prepare the multipart request.
+            const formData = new FormData();
+
+            formData.append(
+                "livePhoto",
+                livePhoto,
+                "live.jpg"
+            );
+
+            faceStatus.textContent =
+                "Verifying your face. Please wait...";
+
+            // Send the captured photo to Spring Boot.
+            const response = await fetch(
+                `/api/face/verify/${encodeURIComponent(
+                    currentStudent.id
+                )}`,
+                {
+                    method: "POST",
+                    body: formData,
+                    credentials: "same-origin",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            // Read the response as text first so invalid JSON can be diagnosed.
+            const responseText = await response.text();
+
+            let result = {};
+
+            try {
+                result = responseText
+                    ? JSON.parse(responseText)
+                    : {};
+            } catch (parseError) {
+                console.error(
+                    "Invalid server response:",
+                    responseText
+                );
+
+                throw new Error(
+                    `The server returned an invalid response (HTTP ${response.status}). Check the backend logs.`
+                );
             }
 
-            if (
-                result.verified === true &&
-                result.attendanceSaved === true
-            ) {
-                faceStatus.textContent =
-                    "Success! Face verified and attendance saved successfully.";
+            // Diagnostic information for browser developer tools.
+            console.log(
+                "Face API HTTP Status:",
+                response.status
+            );
 
-                // Refresh dashboard tables and summary after successful marking.
+            console.log(
+                "Face API Response:",
+                result
+            );
+
+            console.log(
+                "Verified value:",
+                result.verified
+            );
+
+            console.log(
+                "Attendance saved:",
+                result.attendanceSaved
+            );
+
+            console.log(
+                "Response message:",
+                result.message
+            );
+
+            // Display HTTP errors.
+            if (!response.ok) {
+                throw new Error(
+                    `HTTP ${response.status}: ${
+                        result.message ||
+                        result.error ||
+                        responseText ||
+                        "The face verification request failed."
+                    }`
+                );
+            }
+
+            // Accept Boolean or string values from the backend.
+            const verified =
+                result.verified === true ||
+                String(result.verified).toLowerCase() === "true";
+
+            const attendanceSaved =
+                result.attendanceSaved === true ||
+                String(result.attendanceSaved).toLowerCase() === "true";
+
+            if (verified && attendanceSaved) {
+                faceStatus.textContent =
+                    "Success! Your face was verified and attendance was saved.";
+
+                // Refresh the dashboard using the official attendance API.
                 await loadAttendanceHistory();
 
-            } else if (
-                result.verified === true &&
-                result.attendanceSaved !== true
-            ) {
+            } else if (verified) {
                 faceStatus.textContent =
                     result.message ||
-                    "Face verified, but attendance was not saved.";
+                    "Your face was verified, but attendance was not confirmed as saved.";
+
+                console.warn(
+                    "Face verified, but attendance was not confirmed as saved:",
+                    result
+                );
 
             } else {
                 faceStatus.textContent =
                     result.message ||
-                    "Face did not match. Attendance was not marked.";
+                    "Face verification failed. Attendance was not marked.";
+
+                console.warn(
+                    "Face verification was unsuccessful:",
+                    result
+                );
             }
 
         } catch (error) {
+            console.error(
+                "Face capture/verification error:",
+                error
+            );
+
+            console.error(
+                "Error name:",
+                error.name
+            );
+
+            console.error(
+                "Error message:",
+                error.message
+            );
+
             faceStatus.textContent =
                 error.message ||
-                "Could not verify your face. Please try again.";
+                "Face verification failed. Please try again.";
 
         } finally {
-            captureFaceButton.disabled = false;
-        }
+    captureFaceButton.disabled = !cameraStream;  
+     }
     });
 }
 
@@ -499,21 +676,31 @@ function stopFaceCamera(showStatus = true) {
         cameraPlaceholder.style.display = "block";
     }
 
-    if (startCameraButton) startCameraButton.disabled = false;
-    if (captureFaceButton) captureFaceButton.disabled = true;
-    if (stopCameraButton) stopCameraButton.disabled = true;
+    if (startCameraButton) {
+        startCameraButton.disabled = false;
+    }
+
+    if (captureFaceButton) {
+        captureFaceButton.disabled = true;
+    }
+
+    if (stopCameraButton) {
+        stopCameraButton.disabled = true;
+    }
 
     if (showStatus && faceStatus) {
         faceStatus.textContent = "Camera stopped.";
     }
 }
 
+// Stop camera when the Stop Camera button is clicked.
 if (stopCameraButton) {
     stopCameraButton.addEventListener("click", () => {
         stopFaceCamera(true);
     });
 }
 
+// Release the camera when leaving the page.
 window.addEventListener("pagehide", () => {
     stopFaceCamera(false);
 });

@@ -169,10 +169,10 @@ for (Map.Entry<?, ?> entry : result.entrySet()) {
         response.put(key, entry.getValue());
     }
 }
-                response.put("attendanceSaved", false);
-                response.put("message", "Face verification failed.");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(response);
+               response.put("attendanceSaved", false);
+response.put("message", "Face verification failed.");
+return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+        .body(response);
             }
 
             // 4. Find today's session for this student's class

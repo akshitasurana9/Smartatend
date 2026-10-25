@@ -1,24 +1,20 @@
 /* =====================================================
    SMARTATTEND — TEACHER DASHBOARD
-   ONE DAY ATTENDANCE
-
-   Student records: Spring Boot + MySQL
-   Demo attendance: localStorage
+   File: static/js/teacher_dash.js
    ===================================================== */
+
+"use strict";
 
 const ATTENDANCE_KEY = "smartattend_one_day_attendance_v1";
 
 let students = [];
+let databaseAttendance = {};
 let attendance = readJSON(ATTENDANCE_KEY, {});
 let modalStudentId = "";
 
-
-/* ================= GENERAL HELPERS ================= */
-
 function readJSON(key, fallback) {
     try {
-        const value = localStorage.getItem(key);
-        return value ? JSON.parse(value) : fallback;
+        return JSON.parse(localStorage.getItem(key)) || fallback;
     } catch {
         return fallback;
     }
@@ -30,7 +26,6 @@ function saveData() {
 
 function todayKey() {
     const d = new Date();
-
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
@@ -44,20 +39,31 @@ function escapeHTML(value) {
     }[ch]));
 }
 
-function getStudentId(student) {
-    return String(student.id);
+function getStudentId(s) {
+    return String(s?.id ?? s?.studentId ?? s?.student_id ?? "");
+}
+
+function getStudentName(s) {
+    return s?.name ?? s?.fullName ?? s?.studentName ?? "Unnamed student";
+}
+
+function getStudentClass(s) {
+    return s?.studentClass ?? s?.className ?? s?.class_name ?? "";
+}
+
+function getStudentEmail(s) {
+    return s?.email ?? s?.studentEmail ?? "";
+}
+
+function normalizeEmail(value) {
+    return String(value ?? "").trim().toLowerCase();
 }
 
 function getDayAttendance(date = todayKey()) {
     if (!attendance[date] || typeof attendance[date] !== "object") {
         attendance[date] = {};
     }
-
     return attendance[date];
-}
-
-function getStudentStatus(studentId, date = todayKey()) {
-    return getDayAttendance(date)[String(studentId)] || "Not marked";
 }
 
 function showNotice(message, type = "success") {
@@ -71,33 +77,49 @@ function showNotice(message, type = "success") {
     box.textContent = message;
     box.className = `notice ${type}`;
 
-    window.clearTimeout(showNotice.timer);
-
-    showNotice.timer = window.setTimeout(() => {
+    clearTimeout(showNotice.timer);
+    showNotice.timer = setTimeout(() => {
         box.classList.add("hidden");
-    }, 4200);
+    }, 4500);
 }
 
 function statusBadge(status) {
-    const isPresent = status === "Present";
+    const normalized = String(status ?? "").trim().toUpperCase();
+    let cssClass = "not-marked";
 
-    return `
-        <span class="status ${isPresent ? "present" : "not-marked"}">
-            ${escapeHTML(status)}
-        </span>
-    `;
+    if (normalized === "PRESENT") cssClass = "present";
+    if (normalized === "ABSENT") cssClass = "absent";
+    if (normalized === "LATE") cssClass = "late";
+
+    return `<span class="status ${cssClass}">${escapeHTML(status || "Not marked")}</span>`;
 }
 
+function getStudentStatus(id, date = todayKey()) {
+    id = String(id);
+
+    if (date === todayKey() && databaseAttendance[id]) {
+        return databaseAttendance[id];
+    }
+
+    return getDayAttendance(date)[id] || "Not marked";
+}
 
 /* ================= NAVIGATION ================= */
 
 function goToPage(page) {
-    document.querySelectorAll(".page").forEach(el => {
-        el.classList.toggle("active", el.id === page);
+    const target = document.getElementById(page);
+
+    if (!target || !target.classList.contains("page")) {
+        console.warn("Unknown dashboard page:", page);
+        return;
+    }
+
+    document.querySelectorAll(".page").forEach(section => {
+        section.classList.toggle("active", section.id === page);
     });
 
-    document.querySelectorAll(".nav-link").forEach(el => {
-        el.classList.toggle("active", el.dataset.page === page);
+    document.querySelectorAll(".nav-link[data-page]").forEach(button => {
+        button.classList.toggle("active", button.dataset.page === page);
     });
 
     const titles = {
@@ -109,22 +131,35 @@ function goToPage(page) {
     };
 
     const title = document.getElementById("pageTitle");
-
-    if (title) {
-        title.textContent = titles[page] || "Teacher Dashboard";
-    }
+    if (title) title.textContent = titles[page] || "Teacher Dashboard";
 
     if (page === "attendance") {
         updateAttendanceDate();
         renderAttendance();
     }
+
+    if (["dashboard", "students", "attendance", "credentials"].includes(page)) {
+        loadStudentsFromDatabase();
+    }
 }
 
-function updateAttendanceDate() {
-    const date = document.getElementById("attendanceDate");
+document.querySelectorAll("[data-page]").forEach(button => {
+    button.addEventListener("click", () => {
+        goToPage(button.dataset.page);
+    });
+});
 
-    if (date) {
-        date.textContent = new Date().toLocaleDateString(undefined, {
+document.querySelectorAll("[data-go]").forEach(button => {
+    button.addEventListener("click", () => {
+        goToPage(button.dataset.go);
+    });
+});
+
+function updateAttendanceDate() {
+    const element = document.getElementById("attendanceDate");
+
+    if (element) {
+        element.textContent = new Date().toLocaleDateString(undefined, {
             weekday: "long",
             year: "numeric",
             month: "long",
@@ -133,131 +168,189 @@ function updateAttendanceDate() {
     }
 }
 
-document.querySelectorAll("[data-page]").forEach(btn => {
-    btn.addEventListener("click", () => goToPage(btn.dataset.page));
-});
-
-document.querySelectorAll("[data-go]").forEach(btn => {
-    btn.addEventListener("click", () => goToPage(btn.dataset.go));
-});
-
-
-/* ================= ADD STUDENT TO MYSQL ================= */
-
-document.getElementById("studentForm")?.addEventListener(
-    "submit",
-    async event => {
-        event.preventDefault();
-
-        const name = document.getElementById("studentName").value.trim();
-        const studentClass = document.getElementById("studentClass").value.trim();
-        const email = document.getElementById("studentEmail").value.trim();
-        const password = document.getElementById("studentPassword").value;
-        const photoInput = document.getElementById("studentPhoto");
-
-        if (!name || !studentClass || !email || password.length < 8) {
-            showNotice(
-                "Enter all required fields. Password must be at least 8 characters.",
-                "error"
-            );
-            return;
-        }
-
-        if (!photoInput.files.length) {
-            showNotice("Please upload the student's passport-size photo.", "error");
-            return;
-        }
-
-        const photo = photoInput.files[0];
-        const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-
-        if (!allowedTypes.includes(photo.type)) {
-            showNotice("Upload a JPG, PNG or WEBP photo.", "error");
-            return;
-        }
-
-        if (photo.size > 2 * 1024 * 1024) {
-            showNotice("Photo must be smaller than 2 MB.", "error");
-            return;
-        }
-
-        const formData = new FormData();
-
-        formData.append("name", name);
-        formData.append("studentClass", studentClass);
-        formData.append("email", email);
-        formData.append("password", password);
-        formData.append("photo", photo);
-
-        const submitButton = event.submitter;
-
-        if (submitButton) submitButton.disabled = true;
-
-        try {
-            const response = await fetch("/api/students", {
-                method: "POST",
-                body: formData
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                showNotice(result.message || "Could not save student.", "error");
-                return;
-            }
-
-            modalStudentId = String(result.id);
-
-            document.getElementById("newStudentId").textContent = modalStudentId;
-            document.getElementById("credentialModal").classList.remove("hidden");
-
-            event.target.reset();
-
-            const preview = document.getElementById("photoPreview");
-
-            if (preview) {
-                preview.removeAttribute("src");
-                preview.classList.add("hidden");
-            }
-
-            await loadStudentsFromDatabase();
-            showNotice("Student saved successfully in MySQL.");
-
-        } catch (error) {
-            console.error("Add student error:", error);
-
-            showNotice(
-                "Cannot connect to Spring Boot. Check that the server is running.",
-                "error"
-            );
-        } finally {
-            if (submitButton) submitButton.disabled = false;
-        }
-    }
-);
-
-
-/* ================= LOAD STUDENTS FROM MYSQL ================= */
+/* ================= LOAD STUDENTS ================= */
 
 async function loadStudentsFromDatabase() {
     try {
-        const response = await fetch("/api/students");
+        const response = await fetch("/api/students", {
+            cache: "no-store"
+        });
 
         if (!response.ok) {
-            throw new Error("Could not load students.");
+            throw new Error(`Students API error: ${response.status}`);
         }
 
-        students = await response.json();
+        const data = await response.json();
+
+        if (!Array.isArray(data)) {
+            throw new Error("Students API must return a JSON array.");
+        }
+
+        students = data;
+        databaseAttendance = {};
         renderAll();
 
+        // Attendance API is separate so student pages still work
+        // if the attendance endpoint is unavailable.
+        try {
+            const attendanceResponse = await fetch("/api/attendance/today", {
+                cache: "no-store"
+            });
+
+            if (!attendanceResponse.ok) {
+                throw new Error(`Attendance API error: ${attendanceResponse.status}`);
+            }
+
+            const records = await attendanceResponse.json();
+
+            if (!Array.isArray(records)) {
+                throw new Error("Attendance API must return a JSON array.");
+            }
+
+            records.forEach(record => {
+                const email = normalizeEmail(
+                    record.email ??
+                    record.studentEmail ??
+                    record.student?.email
+                );
+
+                let student = email
+                    ? students.find(s => normalizeEmail(getStudentEmail(s)) === email)
+                    : null;
+
+                if (!student) {
+                    const recordId = record.studentId ?? record.student_id ?? record.id;
+
+                    if (recordId !== undefined && recordId !== null) {
+                        student = students.find(s => getStudentId(s) === String(recordId));
+                    }
+                }
+
+                if (!student) {
+                    console.warn("Could not match attendance record:", record);
+                    return;
+                }
+
+                const status = String(record.status ?? "").trim().toUpperCase();
+
+                if (["PRESENT", "ABSENT", "LATE"].includes(status)) {
+                    databaseAttendance[getStudentId(student)] =
+                        status.charAt(0) + status.slice(1).toLowerCase();
+                }
+            });
+
+            renderAll();
+        } catch (error) {
+            console.warn("Attendance API could not be loaded:", error);
+        }
+
+        console.log("Students loaded:", students);
+
     } catch (error) {
-        console.error("Load students error:", error);
-        showNotice("Could not load student records from the database.", "error");
+        console.error("Could not load students:", error);
+
+        showNotice(
+            "Students load nahi hue. Spring Boot aur /api/students check karein.",
+            "error"
+        );
     }
 }
 
+/* ================= ADD STUDENT ================= */
 
-/* ================= STUDENT CREDENTIAL MODAL ================= */
+document.getElementById("studentForm")?.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const name = document.getElementById("studentName").value.trim();
+    const studentClass = document.getElementById("studentClass").value.trim();
+    const email = document.getElementById("studentEmail").value.trim();
+    const password = document.getElementById("studentPassword").value;
+    const photoInput = document.getElementById("studentPhoto");
+
+    if (!name || !studentClass || password.length < 6) {
+        showNotice("Name, class aur kam se kam 6-character password enter karein.", "error");
+        return;
+    }
+
+    if (!photoInput.files || !photoInput.files.length) {
+        showNotice("Student ki passport-size photo upload karein.", "error");
+        return;
+    }
+
+    const photo = photoInput.files[0];
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(photo.type)) {
+        showNotice("Sirf JPG, PNG ya WEBP photo upload karein.", "error");
+        return;
+    }
+
+    if (photo.size > 2 * 1024 * 1024) {
+        showNotice("Photo 2 MB se chhoti honi chahiye.", "error");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("studentClass", studentClass);
+
+    if (email) {
+        formData.append("email", email);
+    }
+
+    formData.append("password", password);
+    formData.append("photo", photo);
+
+    const submitButton = event.submitter;
+    if (submitButton) submitButton.disabled = true;
+
+    try {
+        const response = await fetch("/api/students", {
+            method: "POST",
+            body: formData
+        });
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            showNotice(
+                result.message || result.detail || result.error ||
+                `Student save nahi hua. HTTP ${response.status}`,
+                "error"
+            );
+            return;
+        }
+
+        modalStudentId = String(
+            result.id ?? result.studentId ?? result.student_id ?? ""
+        );
+
+        const idElement = document.getElementById("newStudentId");
+        if (idElement) {
+            idElement.textContent = modalStudentId || "Student created";
+        }
+
+        document.getElementById("credentialModal")?.classList.remove("hidden");
+
+        event.target.reset();
+
+        const preview = document.getElementById("photoPreview");
+        if (preview) {
+            preview.removeAttribute("src");
+            preview.classList.add("hidden");
+        }
+
+        await loadStudentsFromDatabase();
+        showNotice("Student successfully save ho gaya.");
+
+    } catch (error) {
+        console.error("Add student error:", error);
+        showNotice("Server se connection nahi ho raha. Spring Boot check karein.", "error");
+    } finally {
+        if (submitButton) submitButton.disabled = false;
+    }
+});
+
+/* ================= CREDENTIAL MODAL ================= */
 
 function closeModal() {
     document.getElementById("credentialModal")?.classList.add("hidden");
@@ -267,12 +360,15 @@ document.getElementById("closeModal")?.addEventListener("click", closeModal);
 document.getElementById("doneModal")?.addEventListener("click", closeModal);
 
 document.getElementById("credentialModal")?.addEventListener("click", event => {
-    if (event.target.id === "credentialModal") {
-        closeModal();
-    }
+    if (event.target.id === "credentialModal") closeModal();
 });
 
 document.getElementById("copyStudentId")?.addEventListener("click", async () => {
+    if (!modalStudentId) {
+        showNotice("Copy karne ke liye Student ID available nahi hai.", "error");
+        return;
+    }
+
     try {
         await navigator.clipboard.writeText(modalStudentId);
         showNotice("Student ID copied.");
@@ -285,221 +381,232 @@ document.addEventListener("keydown", event => {
     if (event.key === "Escape") closeModal();
 });
 
-
-/* ================= DELETE STUDENT FROM MYSQL ================= */
+/* ================= DELETE STUDENT ================= */
 
 async function deleteStudent(id) {
     const student = students.find(s => getStudentId(s) === String(id));
 
-    if (!student) return;
+    if (!student) {
+        showNotice("Student nahi mila. Page refresh karke try karein.", "error");
+        return;
+    }
 
-    if (!confirm(`Delete ${student.name} (ID: ${student.id})?`)) {
+    if (!confirm(`Delete ${getStudentName(student)} (ID: ${getStudentId(student)})?`)) {
         return;
     }
 
     try {
         const response = await fetch(
-            `/api/students/${encodeURIComponent(student.id)}`,
+            `/api/students/${encodeURIComponent(getStudentId(student))}`,
             { method: "DELETE" }
         );
 
-        let result = {};
-
-        try {
-            result = await response.json();
-        } catch {
-            // Server may return an empty response.
-        }
+        const result = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-            showNotice(result.message || "Could not delete student.", "error");
+            showNotice(
+                result.message || result.detail ||
+                `Student delete nahi hua. HTTP ${response.status}`,
+                "error"
+            );
             return;
         }
 
-        // Remove this student's demo attendance from all dates.
         Object.keys(attendance).forEach(date => {
             if (attendance[date] && typeof attendance[date] === "object") {
-                delete attendance[date][String(student.id)];
+                delete attendance[date][getStudentId(student)];
             }
         });
 
+        delete databaseAttendance[getStudentId(student)];
         saveData();
 
         await loadStudentsFromDatabase();
-        showNotice("Student deleted from MySQL.");
+        showNotice("Student delete ho gaya.");
 
     } catch (error) {
         console.error("Delete student error:", error);
-        showNotice("Could not connect to the server.", "error");
+        showNotice("Server se connection nahi ho raha.", "error");
     }
 }
 
+/* ================= DEMO ATTENDANCE ================= */
+/* This demo changes browser localStorage only, not MySQL. */
 
-/* ================= MARK ONE DAY ATTENDANCE ================= */
-/* Browser demo only — this function does not verify faces. */
 
-function markPresent(id) {
-    const day = getDayAttendance();
+async function markPresent(id) {
     const studentId = String(id);
 
     if (!students.some(s => getStudentId(s) === studentId)) {
-        showNotice("Student not found.", "error");
+        showNotice("Student nahi mila.", "error");
         return;
     }
 
-    if (day[studentId] === "Present") {
-        showNotice("Today's attendance is already marked.", "error");
+    if (databaseAttendance[studentId] === "Present") {
+        showNotice("Attendance server par pehle se marked hai.", "error");
         return;
     }
 
-    day[studentId] = "Present";
+    try {
+        const response = await fetch("/api/attendance/mark", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                studentId: Number(studentId)
+            })
+        });
 
-    saveData();
-    renderAll();
+        const result = await response.json().catch(() => ({}));
 
-    showNotice("Today's attendance marked in this browser demo.");
+        if (!response.ok) {
+            throw new Error(
+                result.message ||
+                result.error ||
+                result.detail ||
+                "Attendance save nahi hui."
+            );
+        }
+
+        // Server se success milne ke baad hi UI update karein
+        databaseAttendance[studentId] = "Present";
+
+        const day = getDayAttendance();
+        day[studentId] = "Present";
+        saveData();
+
+        renderAll();
+
+        showNotice(
+            result.message || "Attendance database mein save ho gayi!",
+            "success"
+        );
+
+    } catch (error) {
+        console.error("Attendance API error:", error);
+        showNotice(
+            error.message || "Server se connection nahi ho paya.",
+            "error"
+        );
+    }
 }
 
 
-/* ================= RENDER STUDENT DIRECTORY ================= */
+/* ================= RENDER STUDENTS ================= */
 
 function renderStudents() {
-    const query = (
-        document.getElementById("studentSearch")?.value || ""
-    ).toLowerCase();
+    const query = (document.getElementById("studentSearch")?.value || "").toLowerCase();
 
-    const filtered = students.filter(s =>
-        `${s.id} ${s.name} ${s.studentClass} ${s.email || ""}`
+    const filtered = students.filter(student =>
+        `${getStudentId(student)} ${getStudentName(student)} ${getStudentClass(student)} ${getStudentEmail(student)}`
             .toLowerCase()
             .includes(query)
     );
 
     const countLabel = document.getElementById("studentCountLabel");
-
     if (countLabel) {
-        countLabel.textContent =
-            `${students.length} student${students.length === 1 ? "" : "s"}`;
+        countLabel.textContent = `${students.length} student${students.length === 1 ? "" : "s"}`;
     }
 
-    const studentTable = document.getElementById("studentTable");
+    const table = document.getElementById("studentTable");
 
-    if (studentTable) {
-        studentTable.innerHTML = filtered.length
-            ? filtered.map(s => `
+    if (table) {
+        table.innerHTML = filtered.length
+            ? filtered.map(student => `
                 <tr>
-                    <td><span class="id-chip">${escapeHTML(s.id)}</span></td>
+                    <td><span class="id-chip">${escapeHTML(getStudentId(student))}</span></td>
                     <td>
-                        <span class="student-name">${escapeHTML(s.name)}</span><br>
-                        <small>${escapeHTML(s.email || "No email provided")}</small>
+                        <span class="student-name">${escapeHTML(getStudentName(student))}</span><br>
+                        <small>${escapeHTML(getStudentEmail(student) || "No email provided")}</small>
                     </td>
-                    <td>${escapeHTML(s.studentClass)}</td>
+                    <td>${escapeHTML(getStudentClass(student))}</td>
                     <td>
-                        <button class="delete-btn"
-                            data-delete="${escapeHTML(s.id)}">
+                        <button type="button" class="delete-btn"
+                            data-delete="${escapeHTML(getStudentId(student))}">
                             Delete
                         </button>
                     </td>
                 </tr>
             `).join("")
-            : `<tr><td colspan="4" class="empty">
-                ${students.length
-                    ? "No matching students found."
-                    : "No students added yet."}
-               </td></tr>`;
+            : `<tr><td colspan="4" class="empty">${students.length ? "No matching students found." : "No students added yet."}</td></tr>`;
+
+        table.querySelectorAll("[data-delete]").forEach(button => {
+            button.addEventListener("click", () => deleteStudent(button.dataset.delete));
+        });
     }
 
-    // Dashboard shows each student's single daily status.
-    const dashboardStudents = document.getElementById("dashboardStudents");
+    const dashboardTable = document.getElementById("dashboardStudents");
 
-    if (dashboardStudents) {
-        dashboardStudents.innerHTML = students.length
-            ? students.slice(0, 5).map(s => {
-                const status = getStudentStatus(s.id);
-
-                return `
-                    <tr>
-                        <td><span class="id-chip">${escapeHTML(s.id)}</span></td>
-                        <td><span class="student-name">${escapeHTML(s.name)}</span></td>
-                        <td>${escapeHTML(s.studentClass)}</td>
-                        <td>${statusBadge(status)}</td>
-                    </tr>
-                `;
-            }).join("")
-            : `<tr><td colspan="4" class="empty">
-                No students yet. Click “Add Student” to begin.
-               </td></tr>`;
+    if (dashboardTable) {
+        dashboardTable.innerHTML = students.length
+            ? students.slice(0, 5).map(student => `
+                <tr>
+                    <td><span class="id-chip">${escapeHTML(getStudentId(student))}</span></td>
+                    <td><span class="student-name">${escapeHTML(getStudentName(student))}</span></td>
+                    <td>${escapeHTML(getStudentClass(student))}</td>
+                    <td>${statusBadge(getStudentStatus(getStudentId(student)))}</td>
+                </tr>
+            `).join("")
+            : `<tr><td colspan="4" class="empty">No students yet. Click “Add Student” to begin.</td></tr>`;
     }
-
-    document.querySelectorAll("[data-delete]").forEach(btn => {
-        btn.onclick = () => deleteStudent(btn.dataset.delete);
-    });
 }
 
-
-/* ================= RENDER STUDENT LOGIN IDs ================= */
+/* ================= RENDER CREDENTIALS ================= */
 
 function renderCredentials() {
-    const query = (
-        document.getElementById("credentialSearch")?.value || ""
-    ).toLowerCase();
+    const query = (document.getElementById("credentialSearch")?.value || "").toLowerCase();
 
-    const filtered = students.filter(s =>
-        `${s.id} ${s.name} ${s.studentClass} ${s.email || ""}`
+    const filtered = students.filter(student =>
+        `${getStudentId(student)} ${getStudentName(student)} ${getStudentClass(student)} ${getStudentEmail(student)}`
             .toLowerCase()
             .includes(query)
     );
 
     const table = document.getElementById("credentialTable");
-
     if (!table) return;
 
     table.innerHTML = filtered.length
-        ? filtered.map(s => `
+        ? filtered.map(student => `
             <tr>
-                <td><span class="id-chip">${escapeHTML(s.id)}</span></td>
-                <td><span class="student-name">${escapeHTML(s.name)}</span></td>
-                <td>${escapeHTML(s.studentClass)}</td>
-                <td>${escapeHTML(s.email || "—")}</td>
+                <td><span class="id-chip">${escapeHTML(getStudentId(student))}</span></td>
+                <td><span class="student-name">${escapeHTML(getStudentName(student))}</span></td>
+                <td>${escapeHTML(getStudentClass(student))}</td>
+                <td>${escapeHTML(getStudentEmail(student) || "—")}</td>
                 <td><span class="status present">ID assigned</span></td>
             </tr>
         `).join("")
         : `<tr><td colspan="5" class="empty">No matching student IDs.</td></tr>`;
 }
 
-
-/* ================= RENDER DAILY ATTENDANCE ================= */
+/* ================= RENDER ATTENDANCE ================= */
 
 function renderAttendance() {
     const table = document.getElementById("attendanceTable");
-
     if (!table) return;
 
-    const query = (
-        document.getElementById("attendanceSearch")?.value || ""
-    ).toLowerCase();
+    const query = (document.getElementById("attendanceSearch")?.value || "").toLowerCase();
 
-    const filtered = students.filter(s =>
-        `${s.id} ${s.name} ${s.studentClass}`
+    const filtered = students.filter(student =>
+        `${getStudentId(student)} ${getStudentName(student)} ${getStudentClass(student)}`
             .toLowerCase()
             .includes(query)
     );
 
-    const day = getDayAttendance();
-
     table.innerHTML = filtered.length
-        ? filtered.map(s => {
-            const id = getStudentId(s);
-            const status = day[id] || "Not marked";
+        ? filtered.map(student => {
+            const id = getStudentId(student);
+            const status = getStudentStatus(id);
             const isPresent = status === "Present";
 
             return `
                 <tr>
-                    <td><span class="id-chip">${escapeHTML(s.id)}</span></td>
-                    <td><span class="student-name">${escapeHTML(s.name)}</span></td>
-                    <td>${escapeHTML(s.studentClass)}</td>
+                    <td><span class="id-chip">${escapeHTML(id)}</span></td>
+                    <td><span class="student-name">${escapeHTML(getStudentName(student))}</span></td>
+                    <td>${escapeHTML(getStudentClass(student))}</td>
                     <td>${statusBadge(status)}</td>
                     <td>
-                        <button
+                        <button type="button"
                             class="${isPresent ? "secondary-btn" : "primary-btn"}"
                             data-present="${escapeHTML(id)}"
                             ${isPresent ? "disabled" : ""}>
@@ -509,73 +616,50 @@ function renderAttendance() {
                 </tr>
             `;
         }).join("")
-        : `<tr><td colspan="5" class="empty">
-            ${students.length
-                ? "No matching students found."
-                : "No students available. Add students first."}
-           </td></tr>`;
+        : `<tr><td colspan="5" class="empty">${students.length ? "No matching students found." : "No students available. Add students first."}</td></tr>`;
 
-    table.querySelectorAll("[data-present]").forEach(btn => {
-        btn.addEventListener("click", () => {
-            markPresent(btn.dataset.present);
-        });
+    table.querySelectorAll("[data-present]").forEach(button => {
+        button.addEventListener("click", () => markPresent(button.dataset.present));
     });
 
     renderDailyStats();
 }
 
-
-/* ================= DAILY ATTENDANCE STATISTICS ================= */
+/* ================= STATS ================= */
 
 function renderDailyStats() {
     const total = students.length;
-    const day = getDayAttendance();
-
-    const present = students.filter(s =>
-        day[getStudentId(s)] === "Present"
-    ).length;
-
+    const present = students.filter(s => getStudentStatus(getStudentId(s)) === "Present").length;
     const unmarked = Math.max(0, total - present);
     const rate = total ? Math.round((present / total) * 100) : 0;
 
-    const totalElement = document.getElementById("sessionTotal");
-    const presentElement = document.getElementById("sessionPresent");
-    const unmarkedElement = document.getElementById("sessionUnmarked");
-    const rateElement = document.getElementById("sessionRate");
+    const elTotal = document.getElementById("sessionTotal");
+    const elPresent = document.getElementById("sessionPresent");
+    const elUnmarked = document.getElementById("sessionUnmarked");
+    const elRate = document.getElementById("sessionRate");
 
-    if (totalElement) totalElement.textContent = total;
-    if (presentElement) presentElement.textContent = present;
-    if (unmarkedElement) unmarkedElement.textContent = unmarked;
-    if (rateElement) rateElement.textContent = rate + "%";
+    if (elTotal) elTotal.textContent = total;
+    if (elPresent) elPresent.textContent = present;
+    if (elUnmarked) elUnmarked.textContent = unmarked;
+    if (elRate) elRate.textContent = rate + "%";
 }
-
-
-/* ================= OVERALL DASHBOARD STATISTICS ================= */
 
 function renderStats() {
     const total = students.length;
-    const day = getDayAttendance();
-
-    const present = students.filter(s =>
-        day[getStudentId(s)] === "Present"
-    ).length;
-
+    const present = students.filter(s => getStudentStatus(getStudentId(s)) === "Present").length;
     const unmarked = Math.max(0, total - present);
     const rate = total ? Math.round((present / total) * 100) : 0;
 
-    const totalElement = document.getElementById("totalStudents");
-    const presentElement = document.getElementById("presentCount");
-    const absentElement = document.getElementById("absentCount");
-    const rateElement = document.getElementById("attendanceRate");
+    const elTotal = document.getElementById("totalStudents");
+    const elPresent = document.getElementById("presentCount");
+    const elUnmarked = document.getElementById("absentCount");
+    const elRate = document.getElementById("attendanceRate");
 
-    if (totalElement) totalElement.textContent = total;
-    if (presentElement) presentElement.textContent = present;
-    if (absentElement) absentElement.textContent = unmarked;
-    if (rateElement) rateElement.textContent = rate + "%";
+    if (elTotal) elTotal.textContent = total;
+    if (elPresent) elPresent.textContent = present;
+    if (elUnmarked) elUnmarked.textContent = unmarked;
+    if (elRate) elRate.textContent = rate + "%";
 }
-
-
-/* ================= RENDER EVERYTHING ================= */
 
 function renderAll() {
     renderStudents();
@@ -584,36 +668,24 @@ function renderAll() {
     renderStats();
 }
 
-
 /* ================= SEARCH ================= */
 
-document.getElementById("studentSearch")
-    ?.addEventListener("input", renderStudents);
+document.getElementById("studentSearch")?.addEventListener("input", renderStudents);
+document.getElementById("credentialSearch")?.addEventListener("input", renderCredentials);
+document.getElementById("attendanceSearch")?.addEventListener("input", renderAttendance);
 
-document.getElementById("credentialSearch")
-    ?.addEventListener("input", renderCredentials);
-
-document.getElementById("attendanceSearch")
-    ?.addEventListener("input", renderAttendance);
-
-
-/* ================= CLEAR DEMO ATTENDANCE ================= */
+/* ================= CLEAR DEMO RECORDS ================= */
 
 document.getElementById("clearDemoBtn")?.addEventListener("click", () => {
-    if (!confirm(
-        "Clear all one-day attendance demo records in this browser? " +
-        "Student records in MySQL will not be deleted."
-    )) {
+    if (!confirm("Clear browser demo attendance? MySQL student and attendance records will not be deleted.")) {
         return;
     }
 
     attendance = {};
     saveData();
     renderAll();
-
-    showNotice("All browser-demo attendance records cleared.");
+    showNotice("Browser demo attendance cleared.");
 });
-
 
 /* ================= PHOTO PREVIEW ================= */
 
@@ -621,7 +693,7 @@ const studentPhotoInput = document.getElementById("studentPhoto");
 const photoPreview = document.getElementById("photoPreview");
 
 studentPhotoInput?.addEventListener("change", function () {
-    const file = this.files[0];
+    const file = this.files?.[0];
 
     if (photoPreview) {
         photoPreview.removeAttribute("src");
@@ -630,16 +702,14 @@ studentPhotoInput?.addEventListener("change", function () {
 
     if (!file) return;
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-
-    if (!allowedTypes.includes(file.type)) {
-        showNotice("Please upload a JPG, PNG or WEBP photo.", "error");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        showNotice("JPG, PNG ya WEBP photo upload karein.", "error");
         this.value = "";
         return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-        showNotice("Photo must be smaller than 2 MB.", "error");
+        showNotice("Photo 2 MB se chhoti honi chahiye.", "error");
         this.value = "";
         return;
     }
@@ -647,17 +717,27 @@ studentPhotoInput?.addEventListener("change", function () {
     if (!photoPreview) return;
 
     const reader = new FileReader();
-
     reader.onload = event => {
         photoPreview.src = event.target.result;
         photoPreview.classList.remove("hidden");
     };
-
     reader.readAsDataURL(file);
 });
 
+/* ================= LOGOUT ================= */
+
+document.getElementById("logoutBtn")?.addEventListener("click", () => {
+    if (confirm("Are you sure you want to logout?")) {
+        sessionStorage.removeItem("teacher");
+        sessionStorage.removeItem("teacherId");
+        sessionStorage.removeItem("teacherEmail");
+        window.location.href = "teacher_login.html";
+    }
+});
 
 /* ================= INITIALIZE ================= */
+
+console.log("SmartAttend teacher dashboard JS loaded.");
 
 updateAttendanceDate();
 renderAll();
