@@ -1,4 +1,3 @@
-
 package com.smartattend.entity;
 
 import jakarta.persistence.*;
@@ -39,5 +38,17 @@ public class SessionRecord {
 
     public String getSessionType() {
         return sessionType;
+    }
+
+    public void setClassId(Integer classId) {
+        this.classId = classId;
+    }
+
+    public void setSessionDate(LocalDate sessionDate) {
+        this.sessionDate = sessionDate;
+    }
+
+    public void setSessionType(String sessionType) {
+        this.sessionType = sessionType;
     }
 }

@@ -1,4 +1,3 @@
-
 package com.smartattend.repository;
 
 import com.smartattend.entity.Attendence;

@@ -1,0 +1,603 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SmartAttend | Attendance History</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #155eef;
+            --primary-dark: #1047bd;
+            --background: #f3f6fc;
+            --card: #ffffff;
+            --text: #17243a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --green: #15803d;
+            --red: #dc2626;
+            --orange: #b45309;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Inter", Arial, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 32px;
+        }
+
+        .container {
+            max-width: 1500px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 28px;
+        }
+
+        .page-header h1 {
+            font-size: clamp(27px, 3vw, 38px);
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .filters,
+        .summary-card,
+        .table-card {
+            background: var(--card);
+            border: 1px solid #e9eef6;
+            border-radius: 18px;
+            box-shadow: 0 8px 28px rgba(20, 35, 59, 0.045);
+        }
+
+        .filters {
+            padding: 22px;
+            margin-bottom: 22px;
+            display: grid;
+            grid-template-columns: minmax(170px, 0.8fr) minmax(240px, 1.5fr) auto auto;
+            align-items: center;
+            gap: 14px;
+        }
+
+        input {
+            height: 49px;
+            width: 100%;
+            min-width: 0;
+            padding: 0 14px;
+            border: 1px solid #d5deeb;
+            border-radius: 10px;
+            background: #fff;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(21, 94, 239, 0.12);
+        }
+
+        button {
+            height: 49px;
+            padding: 0 23px;
+            border: none;
+            border-radius: 10px;
+            background: var(--primary);
+            color: white;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+            white-space: nowrap;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        button.secondary {
+            background: #eaf0fa;
+            color: var(--text);
+        }
+
+        button.secondary:hover {
+            background: #dce6f5;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .summary-card {
+            padding: 23px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 4px;
+            width: 100%;
+            background: var(--primary);
+        }
+
+        .summary-card.present::before {
+            background: #16a34a;
+        }
+
+        .summary-card.absent::before {
+            background: #dc2626;
+        }
+
+        .summary-card.late::before {
+            background: #f59e0b;
+        }
+
+        .summary-label {
+            display: block;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 13px;
+        }
+
+        .summary-card strong {
+            display: block;
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+        .table-card {
+            padding: 24px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .table-header h2 {
+            font-size: 20px;
+            font-weight: 750;
+        }
+
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 780px;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f4f7fc;
+        }
+
+        th {
+            padding: 16px;
+            color: #40516b;
+            font-size: 12px;
+            font-weight: 800;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 16px;
+            font-size: 13px;
+            border-bottom: 1px solid #edf1f7;
+            white-space: nowrap;
+        }
+
+        tbody tr:hover {
+            background: #f8faff;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 11px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .status.present {
+            background: #dcfce7;
+            color: var(--green);
+        }
+
+        .status.absent {
+            background: #fee2e2;
+            color: var(--red);
+        }
+
+        .status.late {
+            background: #fef3c7;
+            color: var(--orange);
+        }
+
+        .status.unknown {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        #message {
+            padding: 13px 15px;
+            margin-bottom: 16px;
+            border-radius: 10px;
+            color: var(--muted);
+            background: #f8fafc;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        #message:empty {
+            display: none;
+        }
+
+        #message.error {
+            color: #b91c1c;
+            background: #fef2f2;
+        }
+
+        #message.success {
+            color: #166534;
+            background: #f0fdf4;
+        }
+
+        .empty-row {
+            text-align: center;
+            padding: 35px 15px;
+            color: var(--muted);
+        }
+
+        @media (max-width: 1000px) {
+            body {
+                padding: 24px;
+            }
+
+            .filters {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .summary {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 560px) {
+            body {
+                padding: 14px;
+            }
+
+            .filters {
+                grid-template-columns: 1fr;
+                padding: 16px;
+            }
+
+            .filters button {
+                width: 100%;
+            }
+
+            .summary {
+                gap: 10px;
+            }
+
+            .summary-card {
+                padding: 17px;
+            }
+
+            .summary-card strong {
+                font-size: 27px;
+            }
+
+            .table-card {
+                padding: 16px;
+            }
+
+            .table-header h2 {
+                font-size: 17px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <header class="page-header">
+        <h1>Attendance History</h1>
+        <p class="subtitle">
+            View, filter and search student attendance records.
+        </p>
+    </header>
+
+    <!-- FILTERS: only one date input -->
+    <section class="filters">
+
+        <input
+            type="date"
+            id="attendanceDate"
+            aria-label="Select attendance date"
+            title="Filter attendance by date"
+        >
+
+        <input
+            type="search"
+            id="search"
+            placeholder="Search student, roll number or class"
+            aria-label="Search attendance"
+        >
+
+        <button type="button" id="searchBtn">
+            Search
+        </button>
+
+        <button type="button" class="secondary" id="resetBtn">
+            Reset
+        </button>
+
+    </section>
+
+    <!-- SUMMARY CARDS -->
+    <section class="summary">
+
+        <div class="summary-card">
+            <span class="summary-label">Total Records</span>
+            <strong id="total">0</strong>
+        </div>
+
+        <div class="summary-card present">
+            <span class="summary-label">Present</span>
+            <strong id="present">0</strong>
+        </div>
+
+        <div class="summary-card absent">
+            <span class="summary-label">Absent</span>
+            <strong id="absent">0</strong>
+        </div>
+
+        <div class="summary-card late">
+            <span class="summary-label">Late</span>
+            <strong id="late">0</strong>
+        </div>
+
+    </section>
+
+    <!-- ATTENDANCE TABLE -->
+    <section class="table-card">
+
+        <div class="table-header">
+            <h2>Attendance Records</h2>
+        </div>
+
+        <div id="message" role="status" aria-live="polite">
+            Loading attendance history...
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Student</th>
+                        <th>Roll Number</th>
+                        <th>Class</th>
+                        <th>Status</th>
+                        <th>Marked At</th>
+                    </tr>
+                </thead>
+
+                <tbody id="historyBody"></tbody>
+            </table>
+        </div>
+
+    </section>
+
+</div>
+
+<script>
+    const API_URL = "/api/attendance/history";
+
+    const dateInput = document.getElementById("attendanceDate");
+    const searchInput = document.getElementById("search");
+    const searchBtn = document.getElementById("searchBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const message = document.getElementById("message");
+    const historyBody = document.getElementById("historyBody");
+
+    async function loadHistory() {
+        const params = new URLSearchParams();
+
+        const selectedDate = dateInput.value;
+        const searchText = searchInput.value.trim();
+
+        // A single date means fromDate and toDate are the same.
+        if (selectedDate) {
+            params.set("fromDate", selectedDate);
+            params.set("toDate", selectedDate);
+        }
+
+        if (searchText) {
+            params.set("search", searchText);
+        }
+
+        historyBody.replaceChildren();
+        message.className = "";
+        message.textContent = "Loading attendance...";
+
+        searchBtn.disabled = true;
+
+        try {
+            const queryString = params.toString();
+            const url = queryString
+                ? API_URL + "?" + queryString
+                : API_URL;
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error("Server returned HTTP " + response.status);
+            }
+
+            const records = await response.json();
+
+            if (!Array.isArray(records)) {
+                throw new Error("The API response is not a list of records.");
+            }
+
+            let presentCount = 0;
+            let absentCount = 0;
+            let lateCount = 0;
+
+            records.forEach(record => {
+                const status =
+                    String(record.status || "").toUpperCase();
+
+                if (status === "PRESENT") presentCount++;
+                if (status === "ABSENT") absentCount++;
+                if (status === "LATE") lateCount++;
+
+                const row = document.createElement("tr");
+
+                const values = [
+                    record.attendanceDate,
+                    record.studentName,
+                    record.rollNumber,
+                    record.className,
+                    status,
+                    record.markedAt
+                ];
+
+                values.forEach((value, index) => {
+                    const cell = document.createElement("td");
+                    const text = value == null ? "-" : String(value);
+
+                    if (index === 4) {
+                        const badge = document.createElement("span");
+                        const badgeStatus = text.toLowerCase();
+
+                        badge.className = "status " +
+                            (["present", "absent", "late"].includes(badgeStatus)
+                                ? badgeStatus
+                                : "unknown");
+
+                        badge.textContent = text || "UNKNOWN";
+                        cell.appendChild(badge);
+                    } else {
+                        cell.textContent = text;
+                    }
+
+                    row.appendChild(cell);
+                });
+
+                historyBody.appendChild(row);
+            });
+
+            document.getElementById("total").textContent =
+                records.length;
+            document.getElementById("present").textContent =
+                presentCount;
+            document.getElementById("absent").textContent =
+                absentCount;
+            document.getElementById("late").textContent =
+                lateCount;
+
+            if (records.length === 0) {
+                message.textContent = "No attendance records found.";
+                message.className = "";
+            } else {
+                message.textContent = "";
+                message.className = "success";
+            }
+
+        } catch (error) {
+            console.error("Attendance history error:", error);
+
+            message.textContent =
+                "Unable to load attendance. Please check the backend API and database.";
+            message.className = "error";
+
+        } finally {
+            searchBtn.disabled = false;
+        }
+    }
+
+    function resetFilters() {
+        dateInput.value = "";
+        searchInput.value = "";
+        loadHistory();
+    }
+
+    // Search button
+    searchBtn.addEventListener("click", loadHistory);
+
+    // Press Enter in the search field to search
+    searchInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            loadHistory();
+        }
+    });
+
+    // Reset button
+    resetBtn.addEventListener("click", resetFilters);
+
+    // Load records on initial page open
+    loadHistory();
+</script>
+
+</body>
+</html>

@@ -25,4 +25,19 @@ public interface SessionRepository
     Optional<Integer> findTodaySessionId(
             @Param("studentClass") String studentClass
     );
+    @Query(value = """
+    SELECT s.session_id
+    FROM sessions s
+    JOIN classes c ON c.class_id = s.class_id
+    WHERE LOWER(TRIM(c.class_name)) =
+          LOWER(TRIM(:studentClass))
+      AND s.session_date = :sessionDate
+      AND s.session_type = 'DAILY'
+    ORDER BY s.session_id DESC
+    LIMIT 1
+    """, nativeQuery = true)
+Optional<Integer> findSessionIdByClassAndDate(
+        @Param("studentClass") String studentClass,
+        @Param("sessionDate") java.time.LocalDate sessionDate
+);
 }
